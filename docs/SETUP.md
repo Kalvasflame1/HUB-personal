@@ -61,6 +61,8 @@ npx supabase db push
 npx supabase gen types typescript --linked > packages/shared/database.types.ts
 ```
 
+   Nota de lo ejecutado el 16-11-2026: el host directo `db.<ref>.supabase.co` solo responde por IPv6 y esta red no lo alcanza. Se usa el pooler en modo sesión, que funciona por IPv4 y sin `supabase login`:
+   `postgresql://postgres.<ref>:<contraseña>@aws-1-eu-west-1.pooler.supabase.com:5432/postgres`, pasado con `--remote` a `db push`, `db query` y `gen types --db-url`. La contraseña se lee de `.env` (`SUPABASE_DB_PASSWORD`).
 6. 🤖 Verificar RLS: una consulta con la clave publicable y sin sesión debe devolver cero filas en todas las tablas.
 7. 👤 En *Authentication → URL Configuration*: añadir la URL local y la de producción como direcciones de redirección permitidas.
 

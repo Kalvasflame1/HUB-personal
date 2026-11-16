@@ -42,10 +42,10 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 - [x] F1-2 `git init`, `.gitignore`, estructura de carpetas y workspaces
 - [x] F1-3 `CLAUDE.md` con convenciones del proyecto
 - [ ] F1-4 Repositorio privado remoto (si D6)
-- [ ] F1-5 Crear proyecto de Supabase (plan Free, región UE)
-- [ ] F1-6 Migración inicial: tablas, índices, vistas y RLS (escrita en `supabase/migrations/`; falta aplicarla y validarla en Supabase)
-- [ ] F1-7 Datos de demostración (`seed.sql`, `is_demo = true`) (escritos; falta cargarlos)
-- [ ] F1-8 Tipos de TypeScript generados
+- [x] F1-5 Crear proyecto de Supabase (plan Free, región UE: eu-west-1)
+- [x] F1-6 Migración inicial: tablas, índices, vistas y RLS (aplicada el 16-11-2026; 17 tablas con RLS, 17 políticas)
+- [ ] F1-7 Datos de demostración (`seed.sql`, `is_demo = true`) (escritos; falta cargarlos: requiere que exista tu usuario)
+- [x] F1-8 Tipos de TypeScript generados (`packages/shared/database.types.ts`)
 - [x] F1-9 `.env.example` completo
 - [x] F1-10 Mover los cinco documentos a `docs/`
 
