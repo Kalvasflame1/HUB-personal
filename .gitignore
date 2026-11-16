@@ -1,0 +1,30 @@
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Dependencias y compilación
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# Copias de seguridad y volcados
+backups/
+*.dump
+*.sql.gz
+
+# Sistema y editores
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Claude Code (ajustes locales)
+.claude/settings.local.json
