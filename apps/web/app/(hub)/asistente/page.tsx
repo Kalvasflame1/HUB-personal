@@ -25,8 +25,8 @@ export default function AsistentePage() {
       <PageHeader title="Asistente" subtitle="Preguntas en lenguaje natural sobre tus datos.">
         <Pill>Disponible en la Fase 5</Pill>
       </PageHeader>
-      <div className="rise grid grid-cols-1 gap-4 md:grid-cols-6">
-        <Card className="flex flex-col md:col-span-4">
+      <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+        <Card className="flex flex-col lg:col-span-4">
           <CardTitle>Qué podrás preguntar</CardTitle>
           <ul className="flex flex-col gap-2">
             {EXAMPLES.map((q) => (
@@ -44,7 +44,7 @@ export default function AsistentePage() {
             Todavía no está activo. Antes hay que verificar las condiciones de uso programado de la suscripción de Claude.
           </p>
         </Card>
-        <Card className="md:col-span-2">
+        <Card className="lg:col-span-2">
           <CardTitle>De dónde responderá</CardTitle>
           <ul className="flex flex-col gap-4">
             {SOURCES.map(({ icon: Icon, title, text }) => (

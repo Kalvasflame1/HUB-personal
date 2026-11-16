@@ -49,9 +49,9 @@ async function Content() {
     return <Empty title="Aún no hay informes" hint="Se generarán automáticamente cuando el Mac mini esté configurado (Fase 4)." />;
   }
   return (
-    <div className="rise grid grid-cols-1 gap-4 md:grid-cols-6">
+    <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
       {reports.map((r, i) => (
-        <Card key={r.id} className={i === 0 ? "md:col-span-6" : "md:col-span-3"}>
+        <Card key={r.id} className={i === 0 ? "lg:col-span-6" : "lg:col-span-3"}>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <Pill tone="accent">{KIND[r.kind] ?? r.kind}</Pill>
             <span className="text-[12px] text-ink-3">

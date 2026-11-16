@@ -30,17 +30,17 @@ export default function ConocimientoPage() {
       <PageHeader title="Conocimiento" subtitle="Craft sigue siendo la fuente. Aquí están los accesos directos.">
         <Pill>Búsqueda en la Fase 4</Pill>
       </PageHeader>
-      <div className="rise grid grid-cols-1 gap-4 md:grid-cols-6">
-        <Card className="md:col-span-3">
+      <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+        <Card className="lg:col-span-3">
           <CardTitle>Documentos de Craft</CardTitle>
           <Links items={CRAFT_DOCS} />
           <p className="mt-3 text-[12px] text-ink-3">Se abren en la app de Craft de este dispositivo.</p>
         </Card>
-        <Card className="md:col-span-3">
+        <Card className="lg:col-span-3">
           <CardTitle>Artefactos de Claude</CardTitle>
           <Links items={ARTIFACTS} external />
         </Card>
-        <Card className="md:col-span-6">
+        <Card className="lg:col-span-6">
           <CardTitle>Qué hay en Craft</CardTitle>
           <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 md:grid-cols-3">
             {CRAFT_FOLDERS.map((f) => (

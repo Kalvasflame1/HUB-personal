@@ -31,8 +31,8 @@ async function Content() {
   const categories = [...new Set(sources.map((s) => s.category ?? "Sin categoría"))].sort((a, b) => a.localeCompare(b, "es"));
 
   return (
-    <div className="rise grid grid-cols-1 gap-4 md:grid-cols-6">
-      <Card className="md:col-span-4">
+    <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+      <Card className="lg:col-span-4">
         <CardTitle action={<DemoBadge show={items.some((i) => i.is_demo)} />}>Lecturas recientes</CardTitle>
         {items.length === 0 ? (
           <Empty title="Sin lecturas todavía" hint="La recogida periódica de fuentes llega en la Fase 4." />
@@ -53,7 +53,7 @@ async function Content() {
         )}
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardTitle action={<DemoBadge show={sources.some((s) => s.is_demo)} />}>Fuentes y favoritos</CardTitle>
         <form action={addSource} className="mb-5 flex flex-col gap-3 border-b border-line pb-5">
           <div className="flex flex-col gap-2">

@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@hub/shared/database.types";
 
@@ -27,6 +28,8 @@ export async function createClient() {
 
 /** Cliente + usuario verificado. Redirige a /login si no hay sesión. Una sola verificación por petición. */
 export const getSession = cache(async () => {
+  // Todo lo que depende de la sesión se calcula en la petición (fechas incluidas), nunca en el prerender.
+  await connection();
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login");

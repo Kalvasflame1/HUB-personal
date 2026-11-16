@@ -60,12 +60,12 @@ async function Content() {
   const jobsDemo = jobs.some((j) => (j.details as { demo?: boolean } | null)?.demo);
 
   return (
-    <div className="rise grid grid-cols-1 gap-4 md:grid-cols-6">
-      <Card className="md:col-span-4">
+    <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+      <Card className="lg:col-span-4">
         <CardTitle action={<DemoBadge show={anyDemo} />}>Tareas</CardTitle>
 
-        <form action={addTask} className="mb-5 grid grid-cols-2 gap-3 border-b border-line pb-5 md:grid-cols-[1fr_auto_auto_auto_auto]">
-          <div className="col-span-2 flex flex-col gap-2 md:col-span-1">
+        <form action={addTask} className="mb-5 grid grid-cols-2 gap-3 border-b border-line pb-5 xl:grid-cols-[1fr_auto_auto_auto_auto]">
+          <div className="col-span-2 flex flex-col gap-2 xl:col-span-1">
             <label htmlFor="title" className="text-[12px] font-medium text-ink-3">Nueva tarea</label>
             <input id="title" name="title" required maxLength={200} placeholder="Qué hay que hacer" autoComplete="off"
               className="h-11 rounded-xl border border-line bg-bg px-3 text-[16px] outline-none focus:border-accent" />
@@ -128,7 +128,7 @@ async function Content() {
         ) : null}
       </Card>
 
-      <div className="flex flex-col gap-4 md:col-span-2">
+      <div className="flex flex-col gap-4 lg:col-span-2">
         <Card>
           <CardTitle>Proyectos</CardTitle>
           {projects.length === 0 ? (

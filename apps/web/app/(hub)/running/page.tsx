@@ -59,8 +59,8 @@ async function Content() {
   const anyDemo = recent.some((r) => r.is_demo);
 
   return (
-    <div className="rise grid grid-cols-1 gap-4 md:grid-cols-6">
-      <Card className="md:col-span-6">
+    <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+      <Card className="lg:col-span-6">
         <CardTitle action={<DemoBadge show={anyDemo} />}>Resumen</CardTitle>
         <div className="grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
           <Stat label="Esta semana" value={num(thisWeek.km, 1)} unit="km" hint={`${thisWeek.runs} ${thisWeek.runs === 1 ? "salida" : "salidas"}`} />
@@ -70,12 +70,12 @@ async function Content() {
         </div>
       </Card>
 
-      <Card className="md:col-span-4">
+      <Card className="lg:col-span-4">
         <CardTitle>Kilómetros por semana</CardTitle>
         <WeeklyKmChart data={weeks} />
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardTitle>Carga y recuperación</CardTitle>
         <p className="tnum text-[40px] font-semibold leading-none tracking-tight">{chronic ? num(ratio, 2) : "–"}</p>
         <p className="mt-2 text-[14px] font-medium">{ratioText}</p>
@@ -85,13 +85,13 @@ async function Content() {
         <div className="mt-3"><LoadChart data={weeks} /></div>
       </Card>
 
-      <Card className="md:col-span-4">
+      <Card className="lg:col-span-4">
         <CardTitle>Ritmo medio por semana (min/km)</CardTitle>
         <PaceChart data={weeks} />
         <p className="mt-2 text-[12px] text-ink-3">El eje está invertido: más arriba es más rápido.</p>
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardTitle>Marcas personales</CardTitle>
         {prs.length === 0 ? (
           <Empty title="Sin marcas todavía" />
@@ -110,7 +110,7 @@ async function Content() {
         )}
       </Card>
 
-      <Card className="md:col-span-6">
+      <Card className="lg:col-span-6">
         <CardTitle>Últimos entrenamientos</CardTitle>
         <div className="-mx-2 overflow-x-auto">
           <table className="w-full min-w-[520px] text-left text-[14px]">

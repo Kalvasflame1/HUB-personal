@@ -43,8 +43,8 @@ async function Dashboard() {
   const anyDemo = pending.some((t) => t.is_demo) || (activity.data ?? []).some((a) => a.is_demo);
 
   return (
-    <div className="rise grid grid-cols-1 gap-4 md:grid-cols-6">
-      <Card className="md:col-span-4">
+    <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+      <Card className="lg:col-span-4">
         <div className="flex items-start justify-between gap-3">
           <p className="text-[15px] text-ink-2">{capitalize(dateLong(new Date()))}</p>
           <DemoBadge show={anyDemo} />
@@ -53,22 +53,21 @@ async function Dashboard() {
           {greeting()}{name ? `, ${name}` : ""}.
         </h1>
         <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink-2">
-          Tienes <strong className="font-semibold text-ink">{pending.length} {pending.length === 1 ? "tarea pendiente" : "tareas pendientes"}</strong>
-          {overdue > 0 ? <> , <span className="font-semibold text-bad">{overdue} {overdue === 1 ? "vencida" : "vencidas"}</span></> : null}
+          Tienes <strong className="font-semibold text-ink">{pending.length} {pending.length === 1 ? "tarea pendiente" : "tareas pendientes"}</strong>{overdue > 0 ? <>, <span className="font-semibold text-bad">{overdue} {overdue === 1 ? "vencida" : "vencidas"}</span>,</> : null}
           {" "}y llevas <strong className="tnum font-semibold text-ink">{num(current.km, 1)} km</strong> esta semana
           {previous.km > 0 ? <> ({num(previous.km, 1)} km la anterior)</> : null}.
         </p>
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardTitle action={<Link href="/running" className="text-[13px] font-medium text-accent">Ver todo</Link>}>Running</CardTitle>
         <p className="tnum text-[40px] font-semibold leading-none tracking-tight">
-          {num(current.km, 1)}<span className="ml-1 text-[15px] font-medium text-ink-3">km esta semana</span>
+          {num(current.km, 1)}<span className="ml-1 text-[15px] font-medium text-ink-3">km</span>
         </p>
         <p className="mt-2 text-[13px] text-ink-3">
-          {current.runs} {current.runs === 1 ? "salida" : "salidas"}
-          {previous.pace ? ` · semana anterior a ${pace(previous.pace)} min/km` : ""}
+          Esta semana · {current.runs} {current.runs === 1 ? "salida" : "salidas"}
         </p>
+        {previous.pace ? <p className="text-[13px] text-ink-3">Anterior: {num(previous.km, 1)} km a {pace(previous.pace)} min/km</p> : null}
         <div className="mt-5 flex h-20 items-end gap-[6px]" role="img" aria-label="Kilómetros de las últimas 8 semanas">
           {weeks.map((w) => (
             <div key={w.start} className="group relative flex h-full flex-1 items-end" title={`Semana del ${dayShort(w.start)}: ${num(w.km, 1)} km`}>
@@ -85,7 +84,7 @@ async function Dashboard() {
         </div>
       </Card>
 
-      <Card className="md:col-span-3">
+      <Card className="lg:col-span-3">
         <CardTitle action={<Link href="/productividad" className="text-[13px] font-medium text-accent">Ver todas</Link>}>Tareas pendientes</CardTitle>
         {pending.length === 0 ? (
           <Empty title="Nada pendiente" hint="Añade tareas desde Productividad." />
@@ -104,7 +103,7 @@ async function Dashboard() {
         )}
       </Card>
 
-      <Card className="md:col-span-3">
+      <Card className="lg:col-span-3">
         <CardTitle>Actividad reciente</CardTitle>
         {(activity.data ?? []).length === 0 ? (
           <Empty title="Sin actividad todavía" />
@@ -120,7 +119,7 @@ async function Dashboard() {
         )}
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardTitle action={<Link href="/informes" className="text-[13px] font-medium text-accent">Ver todos</Link>}>Informes</CardTitle>
         {(reports.data ?? []).length === 0 ? (
           <Empty title="Aún no hay informes" />
@@ -138,7 +137,7 @@ async function Dashboard() {
         )}
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardTitle>Avisos</CardTitle>
         {(notifications.data ?? []).length === 0 ? (
           <Empty title="Sin avisos" />
@@ -161,7 +160,7 @@ async function Dashboard() {
         )}
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardTitle action={<Link href="/conocimiento" className="text-[13px] font-medium text-accent">Ver todo</Link>}>Craft</CardTitle>
         <ul className="flex flex-col gap-2.5">
           {CRAFT_DOCS.slice(0, 4).map((d) => (

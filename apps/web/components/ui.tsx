@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-3xl border border-line bg-surface p-5 md:p-6 ${className}`}>{children}</section>
+    <section className={`min-w-0 rounded-3xl border border-line bg-surface p-5 md:p-6 ${className}`}>{children}</section>
   );
 }
 
@@ -44,7 +44,7 @@ export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone
     warn: "bg-surface-2 text-warn",
     bad: "bg-surface-2 text-bad",
   } as const;
-  return <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium ${tones[tone]}`}>{children}</span>;
+  return <span className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[12px] font-medium ${tones[tone]}`}>{children}</span>;
 }
 
 export function Empty({ title, hint }: { title: string; hint?: string }) {
@@ -71,9 +71,9 @@ export function Stat({ label, value, unit, hint }: { label: string; value: strin
 
 export function SkeletonGrid({ blocks = 4 }: { blocks?: number }) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-6" aria-busy="true" aria-label="Cargando">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-6" aria-busy="true" aria-label="Cargando">
       {Array.from({ length: blocks }).map((_, i) => (
-        <div key={i} className={`skeleton h-44 ${i % 3 === 0 ? "md:col-span-4" : "md:col-span-2"}`} />
+        <div key={i} className={`skeleton h-44 ${i % 3 === 0 ? "lg:col-span-4" : "lg:col-span-2"}`} />
       ))}
     </div>
   );
