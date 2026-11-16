@@ -13,7 +13,7 @@ Leyenda: 👤 lo haces tú (cuentas, contraseñas, aceptar condiciones) · 🤖 
 |---|---|
 | macOS 27.2, M4 Pro, 24 GB | OK |
 | Git 2.54 | Instalado |
-| Node.js / npm | **Falta** |
+| Node.js / npm | Instalado el 16-11-2026: Node 24.22.3 (LTS) y npm 11 en `~/.local/opt/node`, con enlaces en `~/.local/bin` y PATH en `~/.zprofile`. Para actualizar: descargar la nueva versión, descomprimir en `~/.local/opt` y reapuntar el enlace `node` |
 | Homebrew | Falta (opcional) |
 | CLI de Supabase | Falta |
 | CLI de Claude Code (`claude`) | Falta; solo hace falta en la Fase 5 |

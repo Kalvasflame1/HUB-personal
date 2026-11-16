@@ -38,7 +38,7 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 
 ## Fase 1 · Arquitectura y cimientos
 
-- [ ] F1-1 Instalar Node.js LTS y fijar versión en `.nvmrc`
+- [x] F1-1 Instalar Node.js LTS y fijar versión en `.nvmrc` (24.22.3 en `~/.local/opt`, sin sudo)
 - [x] F1-2 `git init`, `.gitignore`, estructura de carpetas y workspaces
 - [x] F1-3 `CLAUDE.md` con convenciones del proyecto
 - [ ] F1-4 Repositorio privado remoto (si D6)
