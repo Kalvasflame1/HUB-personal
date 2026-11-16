@@ -4,7 +4,7 @@ Aplicación personal de un solo usuario: productividad, running (Strava), inform
 
 ## Estado
 
-Fase 1 (cimientos) en curso. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
+Fase 1 (cimientos) cerrada el 16-11-2026. Siguiente: Fase 2 (aplicación Next.js). La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
 
 ## Documentación
 
@@ -35,3 +35,9 @@ Fase 1 (cimientos) en curso. La hoja de ruta y el estado de cada tarea están en
 - Usar las claves nuevas de Supabase (`sb_publishable_`, `sb_secret_`), no las antiguas `anon` / `service_role`.
 - En Next 16 el antiguo `middleware.ts` se llama `proxy.ts`.
 - Al cerrar cada fase: actualizar `docs/` con lo realmente construido y parar para revisión.
+
+## Entorno
+
+- Node 24 LTS en `~/.local/opt/node` (enlaces en `~/.local/bin`). Si un shell no lo encuentra, anteponer `PATH="$HOME/.local/bin:$PATH"`.
+- Supabase: proyecto `jgdnxnddudiccxszrkwn` (eu-west-1). La CLI no tiene sesión iniciada; se conecta por el pooler con `--remote "postgresql://postgres.<ref>:<contraseña>@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"`, leyendo la contraseña de `.env` (`SUPABASE_DB_PASSWORD`). El host directo `db.<ref>` es solo IPv6 y no responde desde esta red.
+- `supabase db query` acepta una sola sentencia por llamada; usar `--read-only` para consultas y `--file` para scripts.

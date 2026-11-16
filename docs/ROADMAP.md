@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 en curso.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026 (queda opcional F1-4, repositorio remoto). Siguiente: Fase 2.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -44,12 +44,14 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 - [ ] F1-4 Repositorio privado remoto (si D6)
 - [x] F1-5 Crear proyecto de Supabase (plan Free, región UE: eu-west-1)
 - [x] F1-6 Migración inicial: tablas, índices, vistas y RLS (aplicada el 16-11-2026; 17 tablas con RLS, 17 políticas)
-- [ ] F1-7 Datos de demostración (`seed.sql`, `is_demo = true`) (escritos; falta cargarlos: requiere que exista tu usuario)
+- [x] F1-7 Datos de demostración (`seed.sql`, `is_demo = true`) (cargados el 16-11-2026: 3 proyectos, 9 tareas, 44 entrenamientos, 3 informes)
 - [x] F1-8 Tipos de TypeScript generados (`packages/shared/database.types.ts`)
 - [x] F1-9 `.env.example` completo
 - [x] F1-10 Mover los cinco documentos a `docs/`
 
 **Hecho cuando:** el esquema está aplicado, una consulta sin sesión devuelve cero filas, y `git log` muestra el primer commit sin ningún secreto.
+
+**Verificado el 16-11-2026:** con datos cargados, la clave publicable sin sesión devuelve cero filas en todas las tablas y vistas y no puede insertar; registros nuevos desactivados; un único usuario confirmado.
 
 ## Fase 2 · Aplicación inicial (primera entrega)
 
