@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sin conexión · Personal Hub</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; min-height: 100dvh; display: grid; place-items: center; font-family: -apple-system, system-ui, sans-serif; background: #f5f5f7; color: #18181b; }
+  @media (prefers-color-scheme: dark) { body { background: #000; color: #f4f4f5; } }
+  main { padding: 2rem; max-width: 22rem; }
+  h1 { font-size: 1.75rem; letter-spacing: -0.02em; margin: 0 0 .5rem; }
+  p { margin: 0 0 1.5rem; opacity: .7; line-height: 1.5; }
+  button { font: inherit; font-weight: 600; border: 0; border-radius: .75rem; padding: .8rem 1.2rem; background: #0a6cff; color: #fff; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sin conexión</h1>
+  <p>Personal Hub necesita Internet para mostrar tus datos. Vuelve a intentarlo cuando tengas conexión.</p>
+  <button onclick="location.reload()">Reintentar</button>
+</main>
+</body>
+</html>

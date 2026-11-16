@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hub-web",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "npm run dev --workspace apps/web"],
+      "port": 3000
+    }
+  ]
+}

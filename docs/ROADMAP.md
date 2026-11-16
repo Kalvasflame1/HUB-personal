@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026 (queda opcional F1-4, repositorio remoto). Siguiente: Fase 2.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026 (queda opcional F1-4, repositorio remoto). Fase 2 en curso: app construida, `build` y `lint` correctos; pendiente la verificación con sesión y el despliegue.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -55,18 +55,18 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 
 ## Fase 2 · Aplicación inicial (primera entrega)
 
-- [ ] F2-1 Proyecto Next.js con TypeScript, Tailwind y ESLint
-- [ ] F2-2 Sistema de diseño: colores, tipografía, tarjetas, modo claro/oscuro
-- [ ] F2-3 Autenticación con Supabase y protección de rutas
-- [ ] F2-4 Estructura de navegación: pestañas inferiores (iPhone), barra lateral (iPad/Mac)
-- [ ] F2-5 Dashboard: resumen del día, tareas pendientes, actividad reciente, resumen deportivo, informes y avisos, tarjeta de Craft
-- [ ] F2-6 Productividad: tareas y proyectos con lectura y escritura reales
-- [ ] F2-7 Running: pantalla con gráficas de Recharts sobre datos de demostración
-- [ ] F2-8 Información web: favoritos y fuentes por categoría (alta, edición, borrado)
-- [ ] F2-9 Informes, Asistente y Conocimiento: pantallas navegables con datos de demostración y estado «próximamente» donde corresponda
-- [ ] F2-10 Conocimiento nivel A: enlaces a carpetas y documentos de Craft y a los artefactos actuales
-- [ ] F2-11 PWA: manifiesto, iconos, pantalla de inicio, áreas seguras, service worker mínimo
-- [ ] F2-12 Etiqueta «Demo» visible donde haya datos de ejemplo
+- [x] F2-1 Proyecto Next.js con TypeScript, Tailwind y ESLint
+- [x] F2-2 Sistema de diseño: colores, tipografía, tarjetas, modo claro/oscuro
+- [x] F2-3 Autenticación con Supabase y protección de rutas
+- [x] F2-4 Estructura de navegación: pestañas inferiores (iPhone), barra lateral (iPad/Mac)
+- [ ] F2-5 Dashboard: resumen del día, tareas pendientes, actividad reciente, resumen deportivo, informes y avisos, tarjeta de Craft (implementado; falta verificarlo con sesión iniciada)
+- [ ] F2-6 Productividad: tareas y proyectos con lectura y escritura reales (implementado; falta verificarlo con sesión iniciada)
+- [ ] F2-7 Running: pantalla con gráficas de Recharts sobre datos de demostración (implementado; falta verificarlo con sesión iniciada)
+- [ ] F2-8 Información web: favoritos y fuentes por categoría (alta, edición, borrado) (implementado; falta verificarlo con sesión iniciada)
+- [ ] F2-9 Informes, Asistente y Conocimiento: pantallas navegables con datos de demostración y estado «próximamente» donde corresponda (implementado; falta verificarlo con sesión iniciada)
+- [ ] F2-10 Conocimiento nivel A: enlaces a carpetas y documentos de Craft y a los artefactos actuales (implementado; falta verificarlo con sesión iniciada)
+- [x] F2-11 PWA: manifiesto, iconos, pantalla de inicio, áreas seguras, service worker mínimo
+- [ ] F2-12 Etiqueta «Demo» visible donde haya datos de ejemplo (implementado; falta verificarlo con sesión iniciada)
 - [ ] F2-13 Despliegue (D1) y prueba de instalación en iPhone, iPad y Mac
 - [ ] F2-14 Revisión de accesibilidad y rendimiento básicos
 - [ ] F2-15 Documentación actualizada con lo construido

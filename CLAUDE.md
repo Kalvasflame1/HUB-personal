@@ -4,7 +4,7 @@ Aplicación personal de un solo usuario: productividad, running (Strava), inform
 
 ## Estado
 
-Fase 1 (cimientos) cerrada el 16-11-2026. Siguiente: Fase 2 (aplicación Next.js). La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
+Fase 1 cerrada el 16-11-2026. Fase 2 en curso: la app está construida en `apps/web`; faltan la verificación con sesión iniciada y el despliegue. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
 
 ## Documentación
 
@@ -41,3 +41,12 @@ Fase 1 (cimientos) cerrada el 16-11-2026. Siguiente: Fase 2 (aplicación Next.js
 - Node 24 LTS en `~/.local/opt/node` (enlaces en `~/.local/bin`). Si un shell no lo encuentra, anteponer `PATH="$HOME/.local/bin:$PATH"`.
 - Supabase: proyecto `jgdnxnddudiccxszrkwn` (eu-west-1). La CLI no tiene sesión iniciada; se conecta por el pooler con `--remote "postgresql://postgres.<ref>:<contraseña>@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"`, leyendo la contraseña de `.env` (`SUPABASE_DB_PASSWORD`). El host directo `db.<ref>` es solo IPv6 y no responde desde esta red.
 - `supabase db query` acepta una sola sentencia por llamada; usar `--read-only` para consultas y `--file` para scripts.
+
+## Aplicación web
+
+- Next 16.4 con `cacheComponents` activado: ninguna lectura de sesión en el nivel superior de un layout o página. Cada página exporta un componente síncrono con la cabecera y envuelve en `<Suspense>` un componente `async` que llama a `getSession()` (`apps/web/lib/supabase/server.ts`). Antes de tocar APIs de Next, leer `node_modules/next/dist/docs/`.
+- Mutaciones con Server Actions que llaman a `getSession()` y terminan con `refresh()` de `next/cache`.
+- Estilos: tokens en `app/globals.css` (un solo color de acento, sin sombras, sin emojis; iconos de `lucide-react`; fuente del sistema).
+- Gráficas: Recharts en `components/charts.tsx`, una sola serie por gráfica, nunca doble eje.
+- Servidor de desarrollo: configuración `hub-web` en `.claude/launch.json`. Comprobaciones: `npm run lint` y `npm run build` dentro de `apps/web`.
+- Los accesos directos de Craft y de artefactos están curados a mano en `apps/web/lib/knowledge.ts`.
