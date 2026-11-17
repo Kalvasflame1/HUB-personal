@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026 (queda opcional F1-4, repositorio remoto). Fase 2 construida y verificada en local el 17-11-2026; solo falta el despliegue (F2-13).**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 construida y verificada en local el 17-11-2026; solo falta el despliegue (F2-13).**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -41,7 +41,7 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 - [x] F1-1 Instalar Node.js LTS y fijar versión en `.nvmrc` (24.22.3 en `~/.local/opt`, sin sudo)
 - [x] F1-2 `git init`, `.gitignore`, estructura de carpetas y workspaces
 - [x] F1-3 `CLAUDE.md` con convenciones del proyecto
-- [ ] F1-4 Repositorio privado remoto (si D6)
+- [x] F1-4 Repositorio privado remoto (si D6): `Kalvasflame1/HUB-personal`, por SSH; subido el 17-11-2026
 - [x] F1-5 Crear proyecto de Supabase (plan Free, región UE: eu-west-1)
 - [x] F1-6 Migración inicial: tablas, índices, vistas y RLS (aplicada el 16-11-2026; 17 tablas con RLS, 17 políticas)
 - [x] F1-7 Datos de demostración (`seed.sql`, `is_demo = true`) (cargados el 16-11-2026: 3 proyectos, 9 tareas, 44 entrenamientos, 3 informes)
