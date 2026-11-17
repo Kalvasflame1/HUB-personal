@@ -4,7 +4,7 @@ Aplicación personal de un solo usuario: productividad, running (Strava), inform
 
 ## Estado
 
-Fase 1 cerrada el 16-11-2026. Fase 2 construida y verificada en local el 17-11-2026 (`apps/web`); desplegada en Vercel (`https://hub-personal-tau.vercel.app`, raíz `apps/web`, despliegue automático desde `main`); solo falta probar la instalación como PWA (F2-13). La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
+Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026 (`apps/web`): desplegada en Vercel (`https://hub-personal-tau.vercel.app`, raíz `apps/web`, despliegue automático desde `main`) e instalada como PWA en el iPhone. Siguiente: Fase 3 (Strava), tras revisión del usuario. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
 
 ## Documentación
 

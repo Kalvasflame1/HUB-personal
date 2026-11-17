@@ -91,8 +91,10 @@ npm run dev
 Si se aprueba **D1 = Vercel Hobby**:
 
 1. 👤 Crear cuenta en Vercel con tu GitHub e importar el repositorio (directorio raíz `apps/web`).
-2. 👤 Añadir las tres variables `NEXT_PUBLIC_*` en *Project Settings → Environment Variables*, con la URL de producción en `NEXT_PUBLIC_APP_URL`.
-3. 🤖 Comprobar el despliegue y añadir la URL a las redirecciones de Supabase.
+2. 👤 Añadir `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en las variables de entorno del proyecto. `NEXT_PUBLIC_APP_URL` no hace falta hasta la Fase 3 (vuelta de OAuth de Strava).
+3. 🤖 Comprobar el despliegue. El inicio de sesión es con correo y contraseña, así que no hace falta configurar redirecciones en Supabase.
+
+Hecho el 17-11-2026: `https://hub-personal-tau.vercel.app`. Cada `git push` a `main` despliega automáticamente.
 
 Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPhone e iPad (plan personal gratuito), servir la app con `tailscale serve` (HTTPS con certificado `*.ts.net`) y mantenerla en marcha con `launchd`. La app solo es accesible con Tailscale activo.
 

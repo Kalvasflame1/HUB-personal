@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 construida y verificada en local el 17-11-2026 y desplegada en Vercel (https://hub-personal-tau.vercel.app); solo falta probar la instalación como PWA (F2-13).**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Siguiente: Fase 3, tras tu revisión.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -67,7 +67,7 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 - [x] F2-10 Conocimiento nivel A: enlaces a carpetas y documentos de Craft y a los artefactos actuales
 - [x] F2-11 PWA: manifiesto, iconos, pantalla de inicio, áreas seguras, service worker mínimo
 - [x] F2-12 Etiqueta «Demo» visible donde haya datos de ejemplo
-- [ ] F2-13 Despliegue (D1) y prueba de instalación en iPhone, iPad y Mac. Despliegue hecho el 17-11-2026 en `https://hub-personal-tau.vercel.app` (Vercel Hobby, raíz `apps/web`); pendiente la instalación en los dispositivos
+- [x] F2-13 Despliegue (D1) y prueba de instalación en iPhone, iPad y Mac. Desplegada el 17-11-2026 en `https://hub-personal-tau.vercel.app` (Vercel Hobby, raíz `apps/web`, despliegue automático desde `main`); instalada y con sesión iniciada en el iPhone. iPad y Mac siguen el mismo proceso (Safari)
 - [ ] F2-14 Revisión de accesibilidad y rendimiento básicos (revisado a mano en escritorio y a 375 px: sin desbordes ni errores de consola; sin auditoría formal)
 - [x] F2-15 Documentación actualizada con lo construido
 
