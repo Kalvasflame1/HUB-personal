@@ -23,7 +23,7 @@ export default function ActivityPage({ params }: PageProps<"/running/[id]">) {
 }
 
 const EFFORT_LABEL: Record<string, string> = {
-  "400m": "400 m", "1/2 mile": "½ milla", "1k": "1 km", "1 mile": "1 milla", "2 mile": "2 millas",
+  "400m": "400 m", "1/2 mile": "½ milla", "1k": "1 km", "1K": "1 km", "5K": "5 km", "10K": "10 km", "15K": "15 km", "20K": "20 km", "30K": "30 km", "1 mile": "1 milla", "2 mile": "2 millas",
   "5k": "5 km", "10k": "10 km", "15k": "15 km", "10 mile": "10 millas", "20k": "20 km",
   "Half-Marathon": "Media maratón", "30k": "30 km", "Marathon": "Maratón",
 };

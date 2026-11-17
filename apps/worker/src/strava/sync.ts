@@ -21,7 +21,8 @@ import {
 
 const RUN_TYPES = ["Run", "TrailRun", "VirtualRun"];
 const PR_KEYS: Record<string, string> = {
-  "1k": "1k", "5k": "5k", "10k": "10k", "Half-Marathon": "half_marathon", "Marathon": "marathon",
+  "1K": "1k", "5K": "5k", "10K": "10k", "1k": "1k", "5k": "5k", "10k": "10k",
+  "Half-Marathon": "half_marathon", "Marathon": "marathon",
 };
 const PR_LABEL: Record<string, string> = {
   "1k": "1 km", "5k": "5 km", "10k": "10 km", half_marathon: "media maratón", marathon: "maratón",
@@ -34,6 +35,8 @@ const DETAILS = Number(args.find((a) => a.startsWith("--details="))?.split("=")[
 
 const localTs = (s: string) => s.replace("Z", "").slice(0, 19); // Strava marca la hora local con Z
 const round = (n: number | undefined | null, d = 1) => (n == null ? null : Number(n.toFixed(d)));
+/** Strava devuelve a veces valores imposibles (p. ej. entradas manuales sin tiempo): se guardan vacíos. */
+const sane = (n: number | undefined | null, max: number, d = 1) => (n == null || !Number.isFinite(n) || n < 0 || n > max ? null : round(n, d));
 const mmss = (s: number) => {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
   return h ? `${h}:${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}` : `${m}:${String(r).padStart(2, "0")}`;
@@ -50,6 +53,15 @@ async function clearDemo(db: pg.Client, uid: string) {
 }
 
 async function upsertSummary(db: pg.Client, uid: string, a: SummaryActivity) {
+  try {
+    return await upsertSummaryRow(db, uid, a);
+  } catch (e) {
+    const { id, sport_type, start_date_local, distance, total_elevation_gain, average_speed, max_speed, average_cadence, average_heartrate } = a;
+    throw new Error(`Actividad ${id}: ${(e as Error).message} ${JSON.stringify({ sport_type, start_date_local, distance, total_elevation_gain, average_speed, max_speed, average_cadence, average_heartrate })}`);
+  }
+}
+
+async function upsertSummaryRow(db: pg.Client, uid: string, a: SummaryActivity) {
   const { rows } = await db.query<{ inserted: boolean }>(
     `insert into public.strava_activities
        (id, user_id, sport_type, name, start_date, start_date_local, distance_m, moving_time_s, elapsed_time_s,
@@ -71,9 +83,9 @@ async function upsertSummary(db: pg.Client, uid: string, a: SummaryActivity) {
      returning (xmax = 0) as inserted`,
     [
       a.id, uid, a.sport_type, a.name, a.start_date, localTs(a.start_date_local),
-      round(a.distance), a.moving_time, a.elapsed_time, round(a.total_elevation_gain),
-      round(a.average_speed, 3), round(a.max_speed, 3), round(a.average_heartrate), round(a.max_heartrate),
-      round(a.average_cadence), a.suffer_score ?? null, a.gear_id ?? null, a.map?.summary_polyline ?? null,
+      round(a.distance), a.moving_time, a.elapsed_time, sane(a.total_elevation_gain, 99_999),
+      sane(a.average_speed, 100, 3), sane(a.max_speed, 100, 3), sane(a.average_heartrate, 250), sane(a.max_heartrate, 250),
+      sane(a.average_cadence, 300), a.suffer_score ?? null, a.gear_id ?? null, a.map?.summary_polyline ?? null,
       JSON.stringify(a),
     ],
   );
@@ -85,14 +97,14 @@ async function saveDetail(db: pg.Client, uid: string, d: DetailedActivity) {
   try {
     await db.query(
       "update public.strava_activities set raw = $2, calories = $3, has_detail = true, synced_at = now() where id = $1",
-      [d.id, JSON.stringify(d), round(d.calories)],
+      [d.id, JSON.stringify(d), sane(d.calories, 99_999)],
     );
     await db.query("delete from public.strava_laps where activity_id = $1", [d.id]);
     for (const l of d.laps ?? []) {
       await db.query(
         `insert into public.strava_laps (id, activity_id, user_id, lap_index, distance_m, moving_time_s, average_speed_ms, average_heartrate)
          values ($1,$2,$3,$4,$5,$6,$7,$8) on conflict (id) do nothing`,
-        [l.id, d.id, uid, l.lap_index, round(l.distance), l.moving_time, round(l.average_speed, 3), round(l.average_heartrate)],
+        [l.id, d.id, uid, l.lap_index, round(l.distance), l.moving_time, sane(l.average_speed, 100, 3), sane(l.average_heartrate, 250)],
       );
     }
     await db.query("delete from public.strava_best_efforts where activity_id = $1", [d.id]);
