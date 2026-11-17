@@ -23,7 +23,7 @@ PostgreSQL gestionado por Supabase. El SQL de este documento es el borrador de l
 | Núcleo | `profiles` |
 | Productividad | `projects`, `tasks`, `activity_log` |
 | Automatizaciones | `job_runs` |
-| Running | `strava_activities`, `strava_laps`, `personal_records`, `private.strava_tokens` |
+| Running | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `private.strava_tokens` |
 | Información web | `web_sources`, `web_items` |
 | Informes | `reports` |
 | Asistente | `assistant_conversations`, `assistant_messages`, `ai_jobs` |
@@ -165,6 +165,20 @@ create table public.strava_laps (
   average_heartrate numeric(5,1)
 );
 create index strava_laps_activity_idx on public.strava_laps (activity_id, lap_index);
+
+-- Fase 3 (migración 20261117000000): mejores tiempos por distancia que Strava calcula en cada carrera.
+-- De aquí salen las marcas personales (personal_records se recalcula en cada sincronización).
+create table public.strava_best_efforts (
+  id              bigint primary key,   -- id del esfuerzo en Strava
+  activity_id     bigint not null references public.strava_activities on delete cascade,
+  user_id         uuid not null references auth.users on delete cascade,
+  name            text not null,        -- 400m, 1k, 5k, 10k, Half-Marathon, Marathon…
+  distance_m      numeric(10,1) not null,
+  elapsed_time_s  integer not null,
+  moving_time_s   integer,
+  start_date      timestamptz not null,
+  pr_rank         integer
+);
 
 create table public.personal_records (
   id           uuid primary key default gen_random_uuid(),

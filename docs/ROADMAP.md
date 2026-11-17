@@ -77,8 +77,8 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 
 ## Fase 3 · Running
 
-- [ ] F3-1 Registro de la app de Strava y revisión del acuerdo de la API
-- [ ] F3-2 Script de autorización OAuth y guardado de tokens en `private`
+- [ ] F3-1 Registro de la app de Strava y revisión del acuerdo de la API (pendiente: lo haces tú, ver SETUP §6)
+- [ ] F3-2 Script de autorización OAuth y guardado de tokens en `private` (`apps/worker/src/strava/auth.ts`; hecho, sin probar con Strava)
 - [ ] F3-3 Renovación automática del token
 - [ ] F3-4 Importación histórica por lotes con control de límites
 - [ ] F3-5 Sincronización incremental (ejecución manual por ahora)

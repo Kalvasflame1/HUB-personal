@@ -1,0 +1,23 @@
+{
+  "name": "@hub/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Proceso del Mac mini: sincronizaciones y tareas programadas (solo conexiones salientes)",
+  "scripts": {
+    "strava:auth": "node --env-file=.env src/strava/auth.ts",
+    "strava:sync": "node --env-file=.env src/strava/sync.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/pg": "^8.23.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

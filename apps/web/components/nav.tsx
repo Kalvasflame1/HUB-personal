@@ -30,8 +30,13 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
+/** Con rutas dinámicas la ruta solo se conoce en tiempo de ejecución: el layout envuelve
+ *  Sidebar y TabBar en Suspense y usa la variante estática (sin elemento activo) como reserva. */
 export function Sidebar() {
-  const pathname = usePathname();
+  return <SidebarLinks pathname={usePathname()} />;
+}
+
+export function SidebarLinks({ pathname }: { pathname: string }) {
   return (
     <nav aria-label="Principal" className="flex flex-col gap-0.5">
       {ITEMS.map(({ href, label, icon: Icon }) => {
@@ -55,7 +60,10 @@ export function Sidebar() {
 }
 
 export function TabBar() {
-  const pathname = usePathname();
+  return <TabBarLinks pathname={usePathname()} />;
+}
+
+export function TabBarLinks({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="Principal"

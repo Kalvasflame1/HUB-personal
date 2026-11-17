@@ -108,12 +108,21 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 ## 6. Strava (Fase 3)
 
 1. 👤 En strava.com/settings/api: crear una aplicación.
-   - *Authorization Callback Domain*: `localhost` (la autorización se hace una vez, desde el Mac mini).
-   - Revisar el acuerdo de la API vigente (1 de junio de 2026) antes de aceptar.
-2. 👤 Pasar `Client ID` y `Client Secret` al `.env` del worker (no por chat).
-3. 🤖 Ejecutar el script de autorización del worker: abre el navegador, autorizas con permiso `activity:read_all`, y los tokens quedan en `private.strava_tokens`.
-4. 🤖 Importación histórica por lotes respetando 100 lecturas/15 min y 1.000/día. Puede repartirse en varios días según tu historial.
-5. 🤖 Borrar las actividades de demostración al terminar la importación.
+   - *Authorization Callback Domain*: `localhost` (la autorización se hace una vez, desde este Mac; el script usa `http://127.0.0.1:8723/callback`, que Strava admite con ese valor).
+   - Revisar el acuerdo de la API vigente antes de aceptar.
+2. 👤 Escribir `STRAVA_CLIENT_ID` y `STRAVA_CLIENT_SECRET` en `apps/worker/.env` (ya existe, con permisos 600 y la conexión a la base de datos rellenada). Nunca por chat.
+3. 👤 Autorizar (abre Strava en el navegador; hay que dejar marcado el permiso de actividades privadas):
+   ```bash
+   npm run strava:auth --workspace apps/worker
+   ```
+   Los tokens quedan en `private.strava_tokens` y se renuevan solos en cada sincronización.
+4. 🤖/👤 Sincronizar. La primera vez trae todo el historial (200 actividades por petición) y el detalle (parciales y mejores esfuerzos) de las 60 carreras más recientes; las siguientes ejecuciones completan el resto:
+   ```bash
+   npm run strava:sync --workspace apps/worker
+   ```
+   Opciones: `-- --details=200` para más detalles por ejecución, `-- --full` para releer todo, `-- --clear-demo` para borrar antes los datos de demostración de running (solo actividades, marcas, actividad reciente y avisos marcados como demo).
+   El script se para solo al acercarse a los límites de Strava (100 lecturas cada 15 min, 1.000 al día) y registra cada ejecución en `job_runs`.
+5. Hasta la Fase 4 la sincronización es manual; después la hará el worker cada 30 min.
 
 ## 7. Worker del Mac mini (Fase 4)
 

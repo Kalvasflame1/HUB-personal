@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { LogOut } from "lucide-react";
-import { Sidebar, TabBar } from "@/components/nav";
+import { Sidebar, SidebarLinks, TabBar, TabBarLinks } from "@/components/nav";
 import { signOut } from "@/app/actions";
 
 export default function HubLayout({ children }: LayoutProps<"/">) {
@@ -8,7 +9,9 @@ export default function HubLayout({ children }: LayoutProps<"/">) {
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col justify-between border-r border-line bg-surface px-3 py-6 md:flex">
         <div>
           <p className="mb-6 px-3 text-[17px] font-bold tracking-tight">Personal Hub</p>
-          <Sidebar />
+          <Suspense fallback={<SidebarLinks pathname="" />}>
+            <Sidebar />
+          </Suspense>
         </div>
         <form action={signOut}>
           <button type="submit" className="press flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[14px] text-ink-3 hover:bg-surface-2 hover:text-ink">
@@ -25,7 +28,9 @@ export default function HubLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
       </div>
-      <TabBar />
+      <Suspense fallback={<TabBarLinks pathname="" />}>
+        <TabBar />
+      </Suspense>
     </div>
   );
 }

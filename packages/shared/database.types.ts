@@ -205,6 +205,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"strava_best_efforts": {
+                  Row: {
+                    "activity_id": number,"distance_m": number,"elapsed_time_s": number,"id": number,"moving_time_s": number | null,"name": string,"pr_rank": number | null,"start_date": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activity_id": number,"distance_m": number,"elapsed_time_s": number,"id": number,"moving_time_s"?: number | null,"name": string,"pr_rank"?: number | null,"start_date": string,"user_id": string
+                  }
+                  Update: {
+                    "activity_id"?: number,"distance_m"?: number,"elapsed_time_s"?: number,"id"?: number,"moving_time_s"?: number | null,"name"?: string,"pr_rank"?: number | null,"start_date"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "strava_best_efforts_activity_id_fkey"
+      columns: ["activity_id"]
+isOneToOne: false
+      referencedRelation: "strava_activities"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"strava_laps": {
                   Row: {
                     "activity_id": number,"average_heartrate": number | null,"average_speed_ms": number | null,"distance_m": number | null,"id": number,"lap_index": number,"moving_time_s": number | null,"user_id": string
