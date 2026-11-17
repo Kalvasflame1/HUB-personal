@@ -28,7 +28,7 @@ type Spec = {
 };
 
 const JOBS: Spec[] = [
-  { name: "strava_sync", every: 30, fn: (db) => syncStrava(db, { details: 60 }), staleAfter: 6 * 60 },
+  { name: "strava_sync", every: 30, fn: (db) => syncStrava(db, { details: 90 }), staleAfter: 6 * 60 },
   { name: "web_fetch", every: 120, fn: fetchWeb, staleAfter: 12 * 60 },
   { name: "report_daily", at: "06:30", fn: (db) => generateReport(db, "daily"), staleAfter: 26 * 60 },
   { name: "report_weekly", at: "07:00", weekday: 0, fn: (db) => generateReport(db, "weekly"), staleAfter: 8 * 24 * 60 },

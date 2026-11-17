@@ -4,7 +4,7 @@ Aplicación personal de un solo usuario: productividad, running (Strava), inform
 
 ## Estado
 
-Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026 (`apps/web`): desplegada en Vercel (`https://hub-personal-tau.vercel.app`, raíz `apps/web`, despliegue automático desde `main`) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026: Strava conectado (`apps/worker`, sincronización manual con `npm run strava:sync --workspace apps/worker`), historial importado y datos de demostración de running borrados. Fase 4 en curso: worker con planificador (`npm start --workspace apps/worker`), fuentes web, informes y avisos; launchd, Craft, copias y limpieza pendientes de decisiones del usuario. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
+Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026 (`apps/web`): desplegada en Vercel (`https://hub-personal-tau.vercel.app`, raíz `apps/web`, despliegue automático desde `main`) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026: Strava conectado (`apps/worker`, sincronización manual con `npm run strava:sync --workspace apps/worker`), historial importado y datos de demostración de running borrados. Fase 4 en curso: worker con planificador (`npm start --workspace apps/worker`), fuentes web, informes y avisos; instalado como agente de launchd `com.personalhub.worker` (quitar con `apps/worker/launchd/uninstall.sh`; registro en `~/Library/Logs/hub-worker.log`); Craft, copias y limpieza pendientes de decisiones del usuario. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
 
 ## Documentación
 

@@ -143,7 +143,7 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 
 | Tarea | Frecuencia | Estado |
 |---|---|---|
-| `strava_sync` | Cada 30 min (60 detalles por ejecución) | Activa |
+| `strava_sync` | Cada 30 min (hasta 90 detalles por ejecución) | Activa |
 | `web_fetch` | Cada 2 h | Activa |
 | `report_daily` | 06:30 | Activa |
 | `report_weekly` | Lunes 07:00 | Activa |
