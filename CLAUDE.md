@@ -4,7 +4,7 @@ Aplicación personal de un solo usuario: productividad, running (Strava), inform
 
 ## Estado
 
-Fase 1 cerrada el 16-11-2026. Fase 2 en curso: la app está construida en `apps/web`; faltan la verificación con sesión iniciada y el despliegue. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
+Fase 1 cerrada el 16-11-2026. Fase 2 construida y verificada en local el 17-11-2026 (`apps/web`); solo falta el despliegue en Vercel (F2-13) y probar la instalación como PWA. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
 
 ## Documentación
 

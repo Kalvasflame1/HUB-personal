@@ -25,10 +25,10 @@ export function WeeklyKmChart({ data }: { data: WeekPoint[] }) {
   return (
     <div className="h-56 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: -18 }} barCategoryGap="22%">
+        <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 0 }} barCategoryGap="22%">
           <CartesianGrid vertical={false} stroke="var(--line)" />
           <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={18} />
-          <YAxis tick={AXIS} tickLine={false} axisLine={false} width={44} />
+          <YAxis tick={AXIS} tickLine={false} axisLine={false} width={38} />
           <Tooltip cursor={{ fill: "var(--surface-2)" }} content={<Tip render={(p) => `${p.km.toLocaleString("es-ES", { maximumFractionDigits: 1 })} km · ${p.runs} ${p.runs === 1 ? "salida" : "salidas"}`} />} />
           <Bar dataKey="km" fill="var(--accent)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
         </BarChart>
@@ -42,11 +42,11 @@ export function PaceChart({ data }: { data: WeekPoint[] }) {
   return (
     <div className="h-56 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+        <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--line)" />
           <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={18} />
           {/* Eje invertido: más arriba = más rápido */}
-          <YAxis reversed tick={AXIS} tickLine={false} axisLine={false} width={44} domain={["dataMin - 5", "dataMax + 5"]} tickFormatter={paceLabel} allowDecimals={false} />
+          <YAxis reversed tick={AXIS} tickLine={false} axisLine={false} width={38} domain={["dataMin - 5", "dataMax + 5"]} tickFormatter={paceLabel} allowDecimals={false} />
           <Tooltip cursor={{ stroke: "var(--ink-3)", strokeDasharray: "3 3" }} content={<Tip render={(p) => `${paceLabel(p.pace ?? 0)} min/km`} />} />
           <Line type="monotone" dataKey="pace" stroke="var(--accent)" strokeWidth={2} dot={{ r: 3, fill: "var(--accent)", stroke: "var(--surface)", strokeWidth: 2 }} activeDot={{ r: 5 }} isAnimationActive={false} />
         </LineChart>
@@ -59,10 +59,10 @@ export function LoadChart({ data }: { data: WeekPoint[] }) {
   return (
     <div className="h-40 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: -18 }} barCategoryGap="22%">
+        <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 0 }} barCategoryGap="22%">
           <CartesianGrid vertical={false} stroke="var(--line)" />
           <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={18} />
-          <YAxis tick={AXIS} tickLine={false} axisLine={false} width={44} />
+          <YAxis tick={AXIS} tickLine={false} axisLine={false} width={38} />
           <Tooltip cursor={{ fill: "var(--surface-2)" }} content={<Tip render={(p) => `Carga ${p.load}`} />} />
           <Bar dataKey="load" fill="var(--ink-3)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
         </BarChart>
