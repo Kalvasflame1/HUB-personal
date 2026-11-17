@@ -126,45 +126,34 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 
 ## 7. Worker del Mac mini (Fase 4)
 
-1. 🤖 Crear `apps/worker/.env` con permisos restringidos:
+1. 🤖 `apps/worker/.env` (permisos 600) ya contiene `SUPABASE_DB_URL`, `HUB_USER_ID`, las credenciales de Strava, `AI_PROVIDER=none` y `TZ`. Craft y las copias se añadirán cuando se configuren. El worker usa la conexión directa a Postgres, así que no necesita la clave `sb_secret_`.
+2. Probar a mano antes de instalar:
+   ```bash
+   npm start --workspace apps/worker -- --once          # ejecuta lo que toque y termina
+   npm start --workspace apps/worker -- --run=web_fetch # una tarea concreta
+   npm run report --workspace apps/worker -- weekly --date=2026-11-10
+   ```
+3. 👤 Autorizar e instalar el agente de `launchd` (arranca al iniciar sesión y se reinicia si se cae):
+   ```bash
+   apps/worker/launchd/install.sh
+   ```
+   Registro: `~/Library/Logs/hub-worker.log`. Para quitarlo: `apps/worker/launchd/uninstall.sh`.
+4. 👤 En *Ajustes del Sistema → Energía*: impedir el reposo automático y activar el reinicio tras corte de corriente. Activar FileVault y el cortafuegos si no lo están. (Claude Code no modifica ajustes del sistema.)
+5. Calendario (hora de Madrid). Si el Mac estuvo apagado, cada tarea se pone al día una sola vez al volver:
 
-```bash
-chmod 600 apps/worker/.env
-```
+| Tarea | Frecuencia | Estado |
+|---|---|---|
+| `strava_sync` | Cada 30 min (60 detalles por ejecución) | Activa |
+| `web_fetch` | Cada 2 h | Activa |
+| `report_daily` | 06:30 | Activa |
+| `report_weekly` | Lunes 07:00 | Activa |
+| `report_monthly` | Día 1, 07:00 | Activa |
+| `watchdog` | Cada hora: avisa si una tarea lleva demasiado sin terminar bien | Activa |
+| `craft_index` | Cada hora | Pendiente de la conexión con Craft |
+| `backup` | 03:00 | Pendiente de elegir carpeta |
+| `cleanup` | Domingo 04:00 | Pendiente de tu autorización |
 
-   Contenido previsto (valores reales introducidos por ti):
-
-```bash
-SUPABASE_URL=https://<ref>.supabase.co
-SUPABASE_SECRET_KEY=sb_secret_...
-SUPABASE_DB_URL=postgresql://...
-HUB_USER_ID=<uuid-de-tu-usuario>
-STRAVA_CLIENT_ID=...
-STRAVA_CLIENT_SECRET=...
-CRAFT_API_URL=...
-CRAFT_SPACE_ID=57b0381b-3107-7b28-4b8f-d05ffde1fe04
-AI_PROVIDER=none
-AI_MAX_JOBS_PER_DAY=20
-BACKUP_DIR=/Users/marcos/Backups/hub-personal
-TZ=Europe/Madrid
-```
-
-2. 🤖 Instalar el servicio de `launchd` (agente de usuario en `~/Library/LaunchAgents/`), con arranque al iniciar sesión y reinicio automático.
-3. 👤 En *Ajustes del Sistema → Energía*: impedir el reposo automático y activar el reinicio tras corte de corriente. Activar FileVault y el cortafuegos si no lo están. (Claude Code no modifica ajustes del sistema.)
-4. 🤖 Calendario de tareas previsto:
-
-| Tarea | Frecuencia |
-|---|---|
-| `strava_sync` | Cada 30 min |
-| `craft_index` | Cada hora |
-| `web_fetch` | Cada 2 h |
-| `report_daily` | 06:30 |
-| `report_weekly` | Lunes 07:00 |
-| `report_monthly` | Día 1, 07:00 |
-| `backup` | 03:00 |
-| `cleanup` | Domingo 04:00 |
-
-5. 🤖 Verificar en la pantalla de Productividad que cada tarea aparece en el historial con estado correcto.
+6. Avisos: si una tarea falla se crea un aviso (solo el primero de una racha de fallos); si lleva demasiado sin terminar bien, otro, como máximo uno al día.
 
 ## 8. Craft (Fase 4)
 

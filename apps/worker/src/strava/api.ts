@@ -1,5 +1,6 @@
 import type pg from "pg";
 import { env, USER_ID } from "../db.ts";
+import { SkipError } from "../jobs.ts";
 
 const API = "https://www.strava.com/api/v3";
 const TOKEN_URL = "https://www.strava.com/oauth/token";
@@ -56,7 +57,7 @@ export type DetailedActivity = SummaryActivity & { laps?: Lap[]; best_efforts?: 
 /** Uso de los límites de lectura que Strava devuelve en cada respuesta. */
 export const usage = { short: 0, shortLimit: 100, daily: 0, dailyLimit: 1000 };
 
-export class RateLimitError extends Error {}
+export class RateLimitError extends SkipError {}
 
 function readUsage(res: Response) {
   const limit = res.headers.get("x-readratelimit-limit") ?? res.headers.get("x-ratelimit-limit");

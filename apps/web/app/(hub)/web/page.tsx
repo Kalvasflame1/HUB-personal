@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ArrowUpRight, Plus, Star, Trash2 } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
-import { Card, CardTitle, DemoBadge, Empty, PageHeader, SkeletonGrid } from "@/components/ui";
+import { Card, CardTitle, DemoBadge, Empty, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
 import { relative } from "@/lib/format";
 import { addSource, deleteSource, toggleFavorite } from "./actions";
 
@@ -22,7 +22,7 @@ export default function WebPage() {
 async function Content() {
   const { supabase } = await getSession();
   const [sourcesRes, itemsRes] = await Promise.all([
-    supabase.from("web_sources").select("id,name,url,category,kind,is_favorite,is_demo").order("is_favorite", { ascending: false }).order("name"),
+    supabase.from("web_sources").select("id,name,url,category,kind,fetch_enabled,is_favorite,is_demo").order("is_favorite", { ascending: false }).order("name"),
     supabase.from("web_items").select("id,title,url,excerpt,published_at,source_id,is_demo").order("published_at", { ascending: false }).limit(12),
   ]);
   const sources = sourcesRes.data ?? [];
@@ -35,7 +35,7 @@ async function Content() {
       <Card className="lg:col-span-4">
         <CardTitle action={<DemoBadge show={items.some((i) => i.is_demo)} />}>Lecturas recientes</CardTitle>
         {items.length === 0 ? (
-          <Empty title="Sin lecturas todavía" hint="La recogida periódica de fuentes llega en la Fase 4." />
+          <Empty title="Sin lecturas todavía" hint="Añade una web con RSS y el Mac mini recogerá sus novedades cada dos horas." />
         ) : (
           <ul className="divide-y divide-line">
             {items.map((i) => (
@@ -72,6 +72,7 @@ async function Content() {
           <button type="submit" className="press flex h-11 items-center justify-center gap-1.5 rounded-xl bg-accent text-[15px] font-semibold text-white">
             <Plus size={17} strokeWidth={2.4} aria-hidden /> Añadir
           </button>
+          <p className="text-[12px] leading-relaxed text-ink-3">Si la web publica RSS, el Mac mini lo detecta y recoge sus novedades cada dos horas.</p>
         </form>
 
         {sources.length === 0 ? (
@@ -86,6 +87,7 @@ async function Content() {
                     <a href={s.url} target="_blank" rel="noopener noreferrer" className="press flex min-w-0 flex-1 items-center gap-1.5 text-[15px]">
                       <span className="truncate">{s.name}</span>
                       <ArrowUpRight size={14} className="shrink-0 text-ink-3" aria-hidden />
+                      {s.kind === "feed" && s.fetch_enabled ? <Pill>RSS</Pill> : null}
                     </a>
                     <form action={toggleFavorite}>
                       <input type="hidden" name="id" value={s.id} />

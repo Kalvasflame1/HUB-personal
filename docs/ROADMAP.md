@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026: Strava conectado e historial importado; faltan la renovación del token, completar los detalles antiguos y ver entrar un entrenamiento nuevo.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026 (faltan la renovación del token, los detalles antiguos y un entrenamiento nuevo). Fase 4 en curso: worker, fuentes web, informes y avisos hechos; pendientes launchd, Craft, copias y limpieza.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -95,15 +95,15 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 
 ## Fase 4 · Automatizaciones
 
-- [ ] F4-1 Worker en Node con planificador y registro en `job_runs`
-- [ ] F4-2 Servicio de `launchd` con arranque y reinicio automáticos
-- [ ] F4-3 Sincronización de Strava cada 30 min
-- [ ] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica
-- [ ] F4-5 Informes diario, semanal y mensual con plantilla (sin IA)
+- [x] F4-1 Worker en Node con planificador y registro en `job_runs` (`apps/worker/src/index.ts`; probado a mano el 17-11-2026)
+- [ ] F4-2 Servicio de `launchd` con arranque y reinicio automáticos (script listo en `apps/worker/launchd/`; falta tu autorización para instalarlo)
+- [ ] F4-3 Sincronización de Strava cada 30 min (programada; empieza al instalar el servicio)
+- [ ] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica (recogida hecha y probada, con detección automática del feed; limpieza pendiente de autorizar)
+- [x] F4-5 Informes diario, semanal y mensual con plantilla (sin IA)
 - [ ] F4-6 Conexión de solo lectura con Craft e índice de búsqueda (nivel B)
 - [ ] F4-7 Pantalla de búsqueda en Conocimiento y enlaces documento–tarea–proyecto
-- [ ] F4-8 Historial de automatizaciones y control de errores en Productividad
-- [ ] F4-9 Avisos cuando una tarea falla o lleva demasiado sin ejecutarse
+- [x] F4-8 Historial de automatizaciones y control de errores en Productividad (último estado por tarea y errores de 7 días)
+- [x] F4-9 Avisos cuando una tarea falla o lleva demasiado sin ejecutarse
 - [ ] F4-10 Copia nocturna y prueba de restauración
 - [ ] F4-11 Restringir a solo lectura las tablas que únicamente escribe el worker
 

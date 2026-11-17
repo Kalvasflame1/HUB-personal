@@ -13,9 +13,10 @@
  * 3. Marcas personales recalculadas a partir de los mejores esfuerzos.
  */
 import type pg from "pg";
-import { connect, startJob, USER_ID } from "../db.ts";
+import { USER_ID } from "../db.ts";
+import { runJob, type JobResult } from "../jobs.ts";
 import {
-  getAccessToken, hasBudget, RateLimitError, stravaGet, usage,
+  getAccessToken, hasBudget, stravaGet, usage,
   type DetailedActivity, type SummaryActivity,
 } from "./api.ts";
 
@@ -28,10 +29,8 @@ const PR_LABEL: Record<string, string> = {
   "1k": "1 km", "5k": "5 km", "10k": "10 km", half_marathon: "media maratón", marathon: "maratón",
 };
 
-const args = process.argv.slice(2);
-const FULL = args.includes("--full");
-const CLEAR_DEMO = args.includes("--clear-demo");
-const DETAILS = Number(args.find((a) => a.startsWith("--details="))?.split("=")[1] ?? 60);
+export type SyncOptions = { full?: boolean; clearDemo?: boolean; details?: number };
+const progress = (text: string) => { if (process.stdout.isTTY) process.stdout.write(`\r${text}`); };
 
 const localTs = (s: string) => s.replace("Z", "").slice(0, 19); // Strava marca la hora local con Z
 const round = (n: number | undefined | null, d = 1) => (n == null ? null : Number(n.toFixed(d)));
@@ -163,14 +162,16 @@ async function refreshRecords(db: pg.Client, uid: string) {
   return { count: best.rows.length, improved };
 }
 
-async function main() {
+export async function syncStrava(db: pg.Client, opts: SyncOptions = {}): Promise<JobResult> {
+  const FULL = opts.full ?? false;
+  const DETAILS = opts.details ?? 60;
   const uid = USER_ID();
-  const db = await connect();
-  const finishJob = await startJob(db, "strava_sync");
   const stats = { listed: 0, inserted: 0, details: 0, pending_details: 0, records: 0, stopped_by_limit: false };
+  // En el proceso permanente el contador de la ejecución anterior ya no vale: Strava lo devuelve en cada respuesta
+  Object.assign(usage, { short: 0, daily: 0 });
 
-  try {
-    if (CLEAR_DEMO) await clearDemo(db, uid);
+  {
+    if (opts.clearDemo) await clearDemo(db, uid);
     const token = await getAccessToken(db);
 
     // 1. Lista
@@ -193,10 +194,10 @@ async function main() {
           if (RUN_TYPES.includes(a.sport_type)) newRuns.push(a);
         }
       }
-      process.stdout.write(`\rActividades leídas: ${stats.listed}`);
+      progress(`Actividades leídas: ${stats.listed}`);
       if (list.length < 200) break;
     }
-    console.log();
+    progress("\n");
 
     // Entradas en la actividad reciente, solo para carreras nuevas en sincronizaciones normales
     if (!firstImport && !FULL) {
@@ -221,9 +222,9 @@ async function main() {
       const d = await stravaGet<DetailedActivity>(token, `/activities/${id}`, { include_all_efforts: "false" });
       await saveDetail(db, uid, d);
       stats.details++;
-      process.stdout.write(`\rDetalles descargados: ${stats.details}`);
+      progress(`Detalles descargados: ${stats.details}`);
     }
-    if (stats.details) console.log();
+    if (stats.details) progress("\n");
     stats.pending_details = pending.rows.length - stats.details;
 
     // 3. Marcas
@@ -236,21 +237,23 @@ async function main() {
       );
     }
 
-    await finishJob("ok", stats.inserted, { ...stats, usage });
-    console.log(
-      `Listo: ${stats.listed} leídas, ${stats.inserted} nuevas, ${stats.details} detalles, ` +
+    const message =
+      `${stats.listed} leídas, ${stats.inserted} nuevas, ${stats.details} detalles, ` +
       `${stats.pending_details} detalles pendientes, ${stats.records} marcas. ` +
-      `Uso de Strava: ${usage.short}/${usage.shortLimit} (15 min), ${usage.daily}/${usage.dailyLimit} (día).`,
-    );
-    if (stats.stopped_by_limit) console.log("Parado por los límites de Strava: vuelve a ejecutarlo en 15 minutos.");
-  } catch (e) {
-    const limit = e instanceof RateLimitError;
-    await finishJob(limit ? "skipped" : "error", stats.inserted, { ...stats, usage }, (e as Error).message);
-    console.error(`\n${(e as Error).message}`);
-    process.exitCode = 1;
-  } finally {
-    await db.end();
+      `Uso de Strava: ${usage.short}/${usage.shortLimit} (15 min), ${usage.daily}/${usage.dailyLimit} (día)` +
+      (stats.stopped_by_limit ? ". Parado por los límites de Strava: sigue en la próxima ejecución" : "");
+    return { items: stats.inserted, details: { ...stats, usage: { ...usage } }, message };
   }
 }
 
-await main();
+// Ejecución manual: npm run strava:sync --workspace apps/worker [-- --full | --details=N | --clear-demo]
+if (import.meta.main) {
+  const args = process.argv.slice(2);
+  const opts: SyncOptions = {
+    full: args.includes("--full"),
+    clearDemo: args.includes("--clear-demo"),
+    details: Number(args.find((a) => a.startsWith("--details="))?.split("=")[1] ?? 60),
+  };
+  const r = await runJob("strava_sync", (db) => syncStrava(db, opts));
+  if (!r.ok) process.exitCode = 1;
+}

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
-import { dayShort, relative, todayISO } from "@/lib/format";
+import { dayShort, isoDaysAgo, relative, todayISO } from "@/lib/format";
 import { addTask } from "./actions";
 import { TaskRow } from "./task-row";
 
@@ -25,6 +25,8 @@ const JOB_LABEL: Record<string, string> = {
   strava_sync: "Sincronización de Strava",
   craft_index: "Índice de Craft",
   web_fetch: "Fuentes web",
+  watchdog: "Vigilancia de tareas",
+  cleanup: "Limpieza",
   backup: "Copia de seguridad",
   report_daily: "Informe diario",
   report_weekly: "Informe semanal",
@@ -36,12 +38,18 @@ async function Content() {
   const [tasksRes, projectsRes, jobsRes] = await Promise.all([
     supabase.from("tasks").select("id,title,status,priority,due_date,completed_at,project_id,is_demo").neq("status", "cancelled").order("due_date", { ascending: true, nullsFirst: false }).order("priority").order("position"),
     supabase.from("projects").select("id,name,status,color,is_demo").eq("status", "active").order("created_at"),
-    supabase.from("job_runs").select("id,job_name,status,started_at,items,error,details").order("started_at", { ascending: false }).limit(8),
+    supabase.from("job_runs").select("id,job_name,status,started_at,items,error,details").gte("started_at", isoDaysAgo(7)).order("started_at", { ascending: false }).limit(1000),
   ]);
 
   const tasks = tasksRes.data ?? [];
   const projects = projectsRes.data ?? [];
-  const jobs = jobsRes.data ?? [];
+  // Último estado de cada tarea y errores de los últimos 7 días
+  const runs = jobsRes.data ?? [];
+  const latest = new Map<string, (typeof runs)[number]>();
+  for (const r of runs) if (!latest.has(r.job_name)) latest.set(r.job_name, r);
+  const lastJobs = [...latest.values()].sort((a, b) => (JOB_LABEL[a.job_name] ?? a.job_name).localeCompare(JOB_LABEL[b.job_name] ?? b.job_name, "es"));
+  const errors7d = new Map<string, number>();
+  for (const r of runs) if (r.status === "error") errors7d.set(r.job_name, (errors7d.get(r.job_name) ?? 0) + 1);
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
   const today = todayISO();
 
@@ -57,7 +65,7 @@ async function Content() {
     .sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? ""))
     .slice(0, 6);
   const anyDemo = tasks.some((t) => t.is_demo) || projects.some((p) => p.is_demo);
-  const jobsDemo = jobs.some((j) => (j.details as { demo?: boolean } | null)?.demo);
+  const jobsDemo = lastJobs.some((j) => (j.details as { demo?: boolean } | null)?.demo);
 
   return (
     <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
@@ -157,11 +165,11 @@ async function Content() {
 
         <Card>
           <CardTitle action={<DemoBadge show={jobsDemo} />}>Automatizaciones</CardTitle>
-          {jobs.length === 0 ? (
-            <Empty title="Sin ejecuciones" hint="El worker del Mac mini llega en la Fase 4." />
+          {lastJobs.length === 0 ? (
+            <Empty title="Sin ejecuciones en los últimos 7 días" hint="Las ejecuta el worker del Mac mini." />
           ) : (
             <ul className="flex flex-col gap-3">
-              {jobs.map((j) => (
+              {lastJobs.map((j) => (
                 <li key={j.id}>
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate text-[14px] font-medium">{JOB_LABEL[j.job_name] ?? j.job_name}</p>
@@ -169,7 +177,11 @@ async function Content() {
                       {j.status === "ok" ? "Correcto" : j.status === "error" ? "Error" : j.status === "running" ? "En curso" : "Omitido"}
                     </Pill>
                   </div>
-                  <p className="text-[12px] text-ink-3">{relative(j.started_at)}{j.error ? ` · ${j.error}` : ""}</p>
+                  <p className="text-[12px] text-ink-3">
+                    {relative(j.started_at)}
+                    {j.status === "error" && j.error ? ` · ${j.error}` : ""}
+                    {errors7d.get(j.job_name) ? ` · ${errors7d.get(j.job_name)} ${errors7d.get(j.job_name) === 1 ? "error" : "errores"} en 7 días` : ""}
+                  </p>
                 </li>
               ))}
             </ul>

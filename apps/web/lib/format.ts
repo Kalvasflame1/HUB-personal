@@ -83,3 +83,8 @@ export function monthName(isoDate: string) {
   const [y, m] = isoDate.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, 1, 12)).toLocaleDateString("es-ES", { month: "long", timeZone: "UTC" });
 }
+
+/** Instante de hace `days` días, en ISO (para filtros de consulta). */
+export function isoDaysAgo(days: number) {
+  return new Date(Date.now() - days * 86_400_000).toISOString();
+}
