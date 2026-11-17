@@ -134,6 +134,7 @@ Flujo del asistente: la PWA inserta la pregunta en `ai_jobs` → el worker la re
 - Autenticación de un solo usuario, registro cerrado, sesión en cookies `HttpOnly`.
 - RLS en todas las tablas; política única `user_id = auth.uid()`.
 - La clave secreta y los tokens de Strava/Craft existen solo en el Mac mini y en el esquema `private`. Nunca en variables `NEXT_PUBLIC_*`.
+- El worker se conecta a Postgres por el pooler con TLS sin verificar la cadena (la CA de Supabase no está en el almacén de Node). Mejora pendiente: descargar el certificado raíz desde el panel de Supabase y verificarlo.
 - HTTPS en todos los tramos. Cabeceras de seguridad (CSP, HSTS) en Next.js.
 - Conexión de Craft de **solo lectura** mientras no autorices escritura.
 - Mac mini: FileVault, cortafuegos activo, actualizaciones automáticas, sin «Sesión remota» salvo necesidad.

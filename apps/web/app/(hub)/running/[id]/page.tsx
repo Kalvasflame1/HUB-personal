@@ -95,9 +95,9 @@ async function Content({ id }: { id: string }) {
                   </tr>
                 </thead>
                 <tbody className="tnum divide-y divide-line">
-                  {laps.map((l) => (
+                  {laps.map((l, i) => (
                     <tr key={l.id}>
-                      <td className="px-2 py-2 text-ink-2">{l.lap_index}</td>
+                      <td className="px-2 py-2 text-ink-2">{i + 1}</td>
                       <td className="px-2 py-2 text-right">{km(Number(l.distance_m), 2)} km</td>
                       <td className="px-2 py-2 text-right">{duration(l.moving_time_s)}</td>
                       <td className="px-2 py-2 text-right font-medium">{pace(l.distance_m && l.moving_time_s ? l.moving_time_s / (Number(l.distance_m) / 1000) : null)}</td>

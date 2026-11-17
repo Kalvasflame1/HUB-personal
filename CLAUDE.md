@@ -4,7 +4,7 @@ Aplicación personal de un solo usuario: productividad, running (Strava), inform
 
 ## Estado
 
-Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026 (`apps/web`): desplegada en Vercel (`https://hub-personal-tau.vercel.app`, raíz `apps/web`, despliegue automático desde `main`) e instalada como PWA en el iPhone. Siguiente: Fase 3 (Strava), tras revisión del usuario. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
+Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026 (`apps/web`): desplegada en Vercel (`https://hub-personal-tau.vercel.app`, raíz `apps/web`, despliegue automático desde `main`) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026: Strava conectado (`apps/worker`, sincronización manual con `npm run strava:sync --workspace apps/worker`), historial importado y datos de demostración de running borrados. La hoja de ruta y el estado de cada tarea están en `docs/ROADMAP.md`; actualizar las casillas al completar tareas.
 
 ## Documentación
 
@@ -17,7 +17,7 @@ Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026 (`apps/web`): despleg
 ## Estructura
 
 - `apps/web`: Next.js 16 (App Router), React 19, TypeScript estricto, Tailwind 4, Recharts
-- `apps/worker`: proceso Node del Mac mini (launchd), solo conexiones salientes
+- `apps/worker`: proceso Node del Mac mini (launchd en la Fase 4), solo conexiones salientes. TypeScript ejecutado directamente por Node 24 (imports con `.ts`), conexión a Postgres por el pooler con `pg` (`SUPABASE_DB_URL` en `apps/worker/.env`)
 - `packages/shared`: tipos generados de la base de datos
 - `supabase/migrations`: migraciones; `supabase/seed.sql`: datos de demostración
 

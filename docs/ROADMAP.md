@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Siguiente: Fase 3, tras tu revisión.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026: Strava conectado e historial importado; faltan la renovación del token, completar los detalles antiguos y ver entrar un entrenamiento nuevo.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -77,19 +77,21 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 
 ## Fase 3 · Running
 
-- [ ] F3-1 Registro de la app de Strava y revisión del acuerdo de la API (pendiente: lo haces tú, ver SETUP §6)
-- [ ] F3-2 Script de autorización OAuth y guardado de tokens en `private` (`apps/worker/src/strava/auth.ts`; hecho, sin probar con Strava)
-- [ ] F3-3 Renovación automática del token
-- [ ] F3-4 Importación histórica por lotes con control de límites
-- [ ] F3-5 Sincronización incremental (ejecución manual por ahora)
-- [ ] F3-6 Estadísticas: semanal, mensual, comparativas entre periodos
-- [ ] F3-7 Marcas personales por distancia
-- [ ] F3-8 Carga de entrenamiento y recuperación (aguda frente a crónica)
-- [ ] F3-9 Gráficas: volumen, ritmo, frecuencia cardiaca, carga
-- [ ] F3-10 Detalle de actividad con parciales
-- [ ] F3-11 Sustituir los datos de demostración de Running por los reales
+- [x] F3-1 Registro de la app de Strava y revisión del acuerdo de la API (se reutilizó la aplicación que ya existía en la cuenta; Strava solo permite una)
+- [x] F3-2 Script de autorización OAuth y guardado de tokens en `private` (`npm run strava:auth --workspace apps/worker`; permiso `read,activity:read_all`, 17-11-2026)
+- [ ] F3-3 Renovación automática del token (implementada en `getAccessToken`; se comprobará la primera vez que caduque, a las 6 h)
+- [ ] F3-4 Importación histórica por lotes con control de límites (1.476 actividades importadas el 17-11-2026; los detalles de ~1.000 carreras antiguas se completan en segundo plano en uno o dos días)
+- [x] F3-5 Sincronización incremental (ejecución manual por ahora: `npm run strava:sync --workspace apps/worker`)
+- [x] F3-6 Estadísticas: semanal, mensual (12 meses), comparativa del mes en curso con los mismos días del anterior
+- [x] F3-7 Marcas personales por distancia (desde `strava_best_efforts`; mejorarán al completarse los detalles antiguos)
+- [x] F3-8 Carga de entrenamiento y recuperación (aguda frente a crónica, con el esfuerzo relativo de Strava)
+- [x] F3-9 Gráficas: volumen semanal y mensual, ritmo, frecuencia cardiaca, carga
+- [x] F3-10 Detalle de actividad con parciales y mejores esfuerzos (`/running/[id]`)
+- [x] F3-11 Sustituir los datos de demostración de Running por los reales (borrados con autorización el 17-11-2026)
 
 **Hecho cuando:** los kilómetros del mes en curso y de los dos anteriores coinciden con los que muestra Strava, y un entrenamiento nuevo aparece tras ejecutar la sincronización.
+
+Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y noviembre 61,11 km (7), idénticos a Strava. Pendiente: ver aparecer un entrenamiento nuevo.
 
 ## Fase 4 · Automatizaciones
 

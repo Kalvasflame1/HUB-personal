@@ -151,7 +151,9 @@ async function refreshRecords(db: pg.Client, uid: string) {
       [uid, key, b.elapsed_time_s, b.activity_id, b.start_date],
     );
     const old = prev.get(key);
-    if (r.rowCount && old != null && b.elapsed_time_s < old) improved.push({ key, time: b.elapsed_time_s });
+    // Solo se avisa de marcas recientes: al completar el historial aparecen marcas antiguas que no son noticia
+    const recent = Date.now() - new Date(b.start_date).getTime() < 7 * 86_400_000;
+    if (r.rowCount && old != null && b.elapsed_time_s < old && recent) improved.push({ key, time: b.elapsed_time_s });
   }
   await db.query("commit");
   } catch (e) {
