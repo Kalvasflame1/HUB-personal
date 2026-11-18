@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowUpRight, CircleAlert, CircleCheck, Info, TriangleAlert } from "lucide-react";
+import { ArrowUpRight, CircleAlert, CircleCheck, Info, TriangleAlert, X } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, Pill, SkeletonGrid } from "@/components/ui";
 import { CRAFT_DOCS } from "@/lib/knowledge";
+import { markNotificationRead } from "./actions";
+import { PodcastPlayer } from "@/components/podcast-player";
 import { capitalize, dateLong, dayShort, greeting, num, pace, relative, weekStartISO } from "@/lib/format";
 
 export default function DashboardPage() {
@@ -20,14 +22,19 @@ const LEVEL_TONE = { info: "text-ink-3", success: "text-good", warning: "text-wa
 async function Dashboard() {
   const { supabase, user } = await getSession();
 
-  const [profile, tasks, weekly, activity, reports, notifications] = await Promise.all([
+  const [profile, tasks, weekly, activity, reports, notifications, episodes] = await Promise.all([
     supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle(),
     supabase.from("v_tasks_pending").select("id,title,due_date,priority,overdue,project_name,is_demo").order("due_date", { ascending: true, nullsFirst: false }).order("priority"),
     supabase.from("v_running_weekly").select("week_start,km,runs,pace_s_per_km").order("week_start", { ascending: false }).limit(8),
     supabase.from("activity_log").select("id,title,kind,occurred_at,is_demo").order("occurred_at", { ascending: false }).limit(5),
     supabase.from("reports").select("id,kind,title,period_start,is_demo").order("period_start", { ascending: false }).limit(3),
-    supabase.from("notifications").select("id,level,title,body,created_at").is("read_at", null).order("created_at", { ascending: false }).limit(4),
+    supabase.from("notifications").select("id,level,title,body,link,created_at", { count: "exact" }).is("read_at", null).order("created_at", { ascending: false }).limit(4),
+    supabase.from("podcast_episodes").select("id,episode_date,title,storage_path,duration_s").order("episode_date", { ascending: false }).limit(1),
   ]);
+
+  // Último episodio del podcast: URL firmada de 3 horas (el bucket es privado)
+  const episode = episodes.data?.[0];
+  const episodeUrl = episode ? (await supabase.storage.from("podcast").createSignedUrl(episode.storage_path, 3 * 3600)).data?.signedUrl : null;
 
   const pending = tasks.data ?? [];
   const overdue = pending.filter((t) => t.overdue).length;
@@ -84,7 +91,19 @@ async function Dashboard() {
         </div>
       </Card>
 
-      <Card className="lg:col-span-3">
+      <Card className="lg:col-span-2">
+        <CardTitle>Podcast de hoy</CardTitle>
+        {episode && episodeUrl ? (
+          <PodcastPlayer
+            id={episode.id} src={episodeUrl} title={episode.title} duration={episode.duration_s}
+            subtitle={`${capitalize(dateLong(new Date(`${episode.episode_date}T12:00:00`)))}${episode.duration_s ? ` · ${Math.round(episode.duration_s / 60)} min` : ""}`}
+          />
+        ) : (
+          <Empty title="Aún no hay episodios" hint="El Mac mini subirá aquí el audio del Resumen diario cada mañana." />
+        )}
+      </Card>
+
+      <Card className="lg:col-span-2">
         <CardTitle action={<Link href="/productividad" className="text-[13px] font-medium text-accent">Ver todas</Link>}>Tareas pendientes</CardTitle>
         {pending.length === 0 ? (
           <Empty title="Nada pendiente" hint="Añade tareas desde Productividad." />
@@ -103,7 +122,7 @@ async function Dashboard() {
         )}
       </Card>
 
-      <Card className="lg:col-span-3">
+      <Card className="lg:col-span-2">
         <CardTitle>Actividad reciente</CardTitle>
         {(activity.data ?? []).length === 0 ? (
           <Empty title="Sin actividad todavía" />
@@ -138,7 +157,16 @@ async function Dashboard() {
       </Card>
 
       <Card className="lg:col-span-2">
-        <CardTitle>Avisos</CardTitle>
+        <CardTitle
+          action={(notifications.count ?? 0) > 1 ? (
+            <form action={markNotificationRead}>
+              <input type="hidden" name="id" value="all" />
+              <button type="submit" className="press text-[13px] font-medium text-accent">Marcar todos ({notifications.count})</button>
+            </form>
+          ) : null}
+        >
+          Avisos
+        </CardTitle>
         {(notifications.data ?? []).length === 0 ? (
           <Empty title="Sin avisos" />
         ) : (
@@ -149,10 +177,21 @@ async function Dashboard() {
               return (
                 <li key={n.id} className="flex gap-2.5">
                   <Icon size={17} className={`mt-0.5 shrink-0 ${LEVEL_TONE[level]}`} aria-hidden />
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-medium leading-snug">{n.title}</p>
+                  <div className="min-w-0 flex-1">
+                    {n.link ? (
+                      <Link href={n.link} className="press text-[14px] font-medium leading-snug">{n.title}</Link>
+                    ) : (
+                      <p className="text-[14px] font-medium leading-snug">{n.title}</p>
+                    )}
                     {n.body ? <p className="text-[12px] text-ink-3">{n.body}</p> : null}
+                    <p className="text-[12px] text-ink-3">{relative(n.created_at)}</p>
                   </div>
+                  <form action={markNotificationRead}>
+                    <input type="hidden" name="id" value={n.id} />
+                    <button type="submit" aria-label="Marcar como leído" className="press -mr-1 -mt-1 grid size-8 shrink-0 place-items-center rounded-lg text-ink-3 hover:bg-surface-2 hover:text-ink">
+                      <X size={16} aria-hidden />
+                    </button>
+                  </form>
                 </li>
               );
             })}

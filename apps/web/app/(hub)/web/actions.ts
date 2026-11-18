@@ -34,3 +34,15 @@ export async function deleteSource(formData: FormData) {
   await supabase.from("web_sources").delete().eq("id", id);
   refresh();
 }
+
+/** Marca una lectura como guardada o leída (son las dos únicas columnas que la web puede cambiar). */
+export async function setItemFlag(formData: FormData) {
+  const { supabase } = await getSession();
+  const id = String(formData.get("id") ?? "");
+  const field = String(formData.get("field") ?? "");
+  const value = formData.get("value") === "true";
+  if (!id) return;
+  if (field === "is_saved") await supabase.from("web_items").update({ is_saved: value }).eq("id", id);
+  else if (field === "is_read") await supabase.from("web_items").update({ is_read: value }).eq("id", id);
+  refresh();
+}

@@ -28,6 +28,7 @@ PostgreSQL gestionado por Supabase. El SQL de este documento es el borrador de l
 | Informes | `reports` |
 | Asistente | `assistant_conversations`, `assistant_messages`, `ai_jobs` |
 | Conocimiento | `kb_documents`, `kb_links` |
+| Podcast | `podcast_episodes` (solo lectura para la web) y bucket privado de Storage `podcast`, con carpeta `<user_id>/`; migración `20261118200000_podcast.sql` |
 | Avisos | `notifications` |
 
 Vistas: `v_running_weekly`, `v_running_monthly`, `v_tasks_pending`.
@@ -360,7 +361,7 @@ Matices:
 
 | Permiso de la web | Tablas |
 |---|---|
-| Solo lectura | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `job_runs`, `kb_documents`, `reports` |
+| Solo lectura | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `job_runs`, `kb_documents`, `reports`, `podcast_episodes` |
 | Lectura y cambiar una casilla | `web_items` (`is_read`, `is_saved`), `notifications` (`read_at`) |
 | Leer y añadir | `activity_log` |
 | Todo (`owner_all`) | `tasks`, `projects`, `kb_links`, `web_sources`, `profiles`, `ai_jobs`, `assistant_conversations`, `assistant_messages` |

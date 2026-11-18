@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ArrowUpRight, Plus, Star, Trash2 } from "lucide-react";
+import { ArrowUpRight, Bookmark, Check, Plus, Star, Trash2 } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
 import { relative } from "@/lib/format";
-import { addSource, deleteSource, toggleFavorite } from "./actions";
+import { addSource, deleteSource, setItemFlag, toggleFavorite } from "./actions";
 
 export const metadata: Metadata = { title: "Información web" };
 
@@ -19,14 +19,54 @@ export default function WebPage() {
   );
 }
 
+type Item = { id: string; title: string; url: string; excerpt: string | null; published_at: string | null; is_read: boolean; is_saved: boolean };
+
+function FlagButton({ id, field, on, labelOn, labelOff, children }: { id: string; field: "is_saved" | "is_read"; on: boolean; labelOn: string; labelOff: string; children: React.ReactNode }) {
+  return (
+    <form action={setItemFlag}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="field" value={field} />
+      <input type="hidden" name="value" value={String(!on)} />
+      <button type="submit" aria-label={on ? labelOn : labelOff} aria-pressed={on}
+        className={`press grid size-8 place-items-center rounded-lg hover:bg-surface-2 ${on ? "text-accent" : "text-ink-3"}`}>
+        {children}
+      </button>
+    </form>
+  );
+}
+
+function ItemRow({ item: i, source }: { item: Item; source?: string }) {
+  return (
+    <li className="flex items-start gap-2 py-3 first:pt-0">
+      <a href={i.url} target="_blank" rel="noopener noreferrer" className={`press block min-w-0 flex-1 ${i.is_read ? "opacity-60" : ""}`}>
+        <p className="text-[16px] font-medium leading-snug">{i.title}</p>
+        {i.excerpt ? <p className="mt-0.5 text-[14px] text-ink-2">{i.excerpt}</p> : null}
+        <p className="mt-1 text-[12px] text-ink-3">
+          {source ?? "Fuente"}{i.published_at ? ` · ${relative(i.published_at)}` : ""}
+        </p>
+      </a>
+      <div className="flex shrink-0 flex-col">
+        <FlagButton id={i.id} field="is_saved" on={i.is_saved} labelOn="Quitar de guardadas" labelOff="Guardar">
+          <Bookmark size={16} fill={i.is_saved ? "currentColor" : "none"} aria-hidden />
+        </FlagButton>
+        <FlagButton id={i.id} field="is_read" on={i.is_read} labelOn="Marcar como no leída" labelOff="Marcar como leída">
+          <Check size={16} strokeWidth={i.is_read ? 3 : 2} aria-hidden />
+        </FlagButton>
+      </div>
+    </li>
+  );
+}
+
 async function Content() {
   const { supabase } = await getSession();
-  const [sourcesRes, itemsRes] = await Promise.all([
+  const [sourcesRes, itemsRes, savedRes] = await Promise.all([
     supabase.from("web_sources").select("id,name,url,category,kind,fetch_enabled,is_favorite,is_demo").order("is_favorite", { ascending: false }).order("name"),
-    supabase.from("web_items").select("id,title,url,excerpt,published_at,source_id,is_demo").order("published_at", { ascending: false }).limit(12),
+    supabase.from("web_items").select("id,title,url,excerpt,published_at,source_id,is_demo,is_read,is_saved").order("published_at", { ascending: false }).limit(12),
+    supabase.from("web_items").select("id,title,url,excerpt,published_at,source_id,is_demo,is_read,is_saved").eq("is_saved", true).order("published_at", { ascending: false }).limit(50),
   ]);
   const sources = sourcesRes.data ?? [];
   const items = itemsRes.data ?? [];
+  const saved = savedRes.data ?? [];
   const sourceName = new Map(sources.map((s) => [s.id, s.name]));
   const categories = [...new Set(sources.map((s) => s.category ?? "Sin categoría"))].sort((a, b) => a.localeCompare(b, "es"));
 
@@ -38,20 +78,20 @@ async function Content() {
           <Empty title="Sin lecturas todavía" hint="Añade una web con RSS y el Mac mini recogerá sus novedades cada dos horas." />
         ) : (
           <ul className="divide-y divide-line">
-            {items.map((i) => (
-              <li key={i.id} className="py-3 first:pt-0">
-                <a href={i.url} target="_blank" rel="noopener noreferrer" className="press block">
-                  <p className="text-[16px] font-medium leading-snug">{i.title}</p>
-                  {i.excerpt ? <p className="mt-0.5 text-[14px] text-ink-2">{i.excerpt}</p> : null}
-                  <p className="mt-1 text-[12px] text-ink-3">
-                    {sourceName.get(i.source_id) ?? "Fuente"}{i.published_at ? ` · ${relative(i.published_at)}` : ""}
-                  </p>
-                </a>
-              </li>
-            ))}
+            {items.map((i) => <ItemRow key={i.id} item={i} source={sourceName.get(i.source_id)} />)}
           </ul>
         )}
       </Card>
+
+      {saved.length ? (
+        <Card className="lg:col-span-4 lg:order-last">
+          <CardTitle>Guardadas <span className="tnum font-normal text-ink-3">{saved.length}</span></CardTitle>
+          <ul className="divide-y divide-line">
+            {saved.map((i) => <ItemRow key={i.id} item={i} source={sourceName.get(i.source_id)} />)}
+          </ul>
+          <p className="mt-3 text-[12px] text-ink-3">La limpieza semanal nunca borra las lecturas guardadas.</p>
+        </Card>
+      ) : null}
 
       <Card className="lg:col-span-2">
         <CardTitle action={<DemoBadge show={sources.some((s) => s.is_demo)} />}>Fuentes y favoritos</CardTitle>

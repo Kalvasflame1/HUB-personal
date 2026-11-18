@@ -149,6 +149,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"podcast_episodes": {
+                  Row: {
+                    "bytes": number | null,"created_at": string,"duration_s": number | null,"episode_date": string,"id": string,"storage_path": string,"title": string,"user_id": string,"voice": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bytes"?: number | null,"created_at"?: string,"duration_s"?: number | null,"episode_date": string,"id"?: string,"storage_path": string,"title": string,"user_id": string,"voice"?: string
+                  }
+                  Update: {
+                    "bytes"?: number | null,"created_at"?: string,"duration_s"?: number | null,"episode_date"?: string,"id"?: string,"storage_path"?: string,"title"?: string,"user_id"?: string,"voice"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string | null,"settings": NonNullable<Json>,"timezone": string,"units": string,"updated_at": string,"user_id": string

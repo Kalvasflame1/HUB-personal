@@ -98,7 +98,7 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 - [x] F4-1 Worker en Node con planificador y registro en `job_runs` (`apps/worker/src/index.ts`; probado a mano el 17-11-2026)
 - [x] F4-2 Servicio de `launchd` con arranque y reinicio automáticos (instalado con autorización el 17-11-2026: `com.personalhub.worker`, registro en `~/Library/Logs/hub-worker.log`)
 - [x] F4-3 Sincronización de Strava cada 30 min (hasta 90 detalles por ejecución)
-- [x] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica (recogida con detección automática del feed; limpieza semanal autorizada y activa desde el 18-11-2026)
+- [x] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica (recogida con detección automática del feed; limpieza semanal autorizada y activa desde el 18-11-2026; botones «Guardar» y «Leída» en cada lectura, y «Marcar como leído» en los avisos de Inicio)
 - [x] F4-5 Informes diario, semanal y mensual con plantilla (sin IA)
 - [x] F4-6 Conexión de solo lectura con Craft e índice de búsqueda (nivel B) (18-11-2026: conexión de API propia, solo GET; 220 documentos indexados en la primera pasada; revisión incremental cada hora)
 - [x] F4-7 Pantalla de búsqueda en Conocimiento y enlaces documento–tarea–proyecto (18-11-2026: se vincula desde cada resultado de búsqueda; Productividad muestra los documentos bajo cada tarea y proyecto)
@@ -111,7 +111,11 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 
 ## Fase 5 · Inteligencia artificial
 
-- [ ] F5-1 **Verificar las condiciones vigentes de uso programado de la suscripción (R1)** y decidir contigo si se sigue
+- [x] F5-1 **Verificar las condiciones vigentes de uso programado de la suscripción (R1)** y decidir contigo si se sigue. Verificación hecha el 18-11-2026. **Decisión del usuario (18-11-2026): opción A con tope diario de trabajos** (plan Pro, que no tiene créditos de API):
+  - Fuentes: [Agent SDK con tu plan](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan) (aviso del 07-10-2026) y [Créditos mensuales de API](https://support.claude.com/en/articles/17154008-monthly-api-credits-for-max-ultra-and-team-plans).
+  - **Opción A · sesión del plan:** `claude -p` con tu suscripción iniciada. Sin coste añadido, pero comparte límites con Claude Code y Cowork. Vale con Pro, Max o Ultra.
+  - **Opción B · créditos mensuales de API (solo Max/Ultra):** `claude -p` con una clave de una organización de Console vinculada (100 $/mes en Max y 200 $/mes en Ultra). No toca tus límites; al agotarse, se para y no se cobra, salvo que actives la recarga automática. Requiere vincular la organización (acción tuya en claude.ai → Ajustes → Facturación) y guardar la clave en `apps/worker/.env`. Los créditos que no se usan caducan cada mes.
+  - En ambas: tope diario de trabajos en el worker y `AI_PROVIDER=none` como interruptor.
 - [ ] F5-2 Asistente sin IA: consultas predefinidas resueltas con SQL (km del mes, evolución del ritmo, tareas pendientes)
 - [ ] F5-3 Instalar la CLI de Claude Code en el Mac mini y proveedor `claude_cli`
 - [ ] F5-4 Cola `ai_jobs` con Realtime, tope diario y medición de consumo
@@ -127,6 +131,13 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 ## Fase 6 · Ampliaciones
 
 Sin orden fijado; cada una se planifica aparte.
+
+- **Podcast diario en la app** (empezado el 18-11-2026)
+  - [x] Tabla `podcast_episodes`, bucket privado `podcast` y reproductor en Inicio: reproducir/pausa, −15 s, +30 s, barra, velocidad, posición recordada y controles en la pantalla de bloqueo.
+  - [ ] Puente desde el atajo de Siri, que guarda el audio en iCloud, donde launchd no entra: una copia en una carpeta local si el atajo corre en el Mac, o subida directa si corre en el iPhone.
+  - [ ] Tarea del worker: convertir a AAC con `afconvert` (77 MB → ~3,4 MB), subir al bucket y conservar 7 episodios. Necesita la clave `sb_secret_` en `apps/worker/.env`.
+  - [ ] Prueba de voces: ElevenLabs (cuenta propia, 10.000 créditos al mes), una voz premium de macOS y Piper; decisión del usuario.
+- Widgets del iPhone y Apple Watch: ver la nota de la conversación del 18-11-2026 (Scriptable o Atajos sin coste; app nativa con WidgetKit/watchOS más adelante).
 
 - Apple Health (no tiene API web: exige una app nativa mínima o un Atajo que exporte datos)
 - Finanzas personales
