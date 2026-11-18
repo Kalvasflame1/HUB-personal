@@ -135,13 +135,18 @@ Un artefacto es una página publicada: no ofrece una API estable de datos. Por e
 - Revocar el acceso es borrar la conexión en Craft; el Hub sigue funcionando con el índice existente.
 - Ninguna migración masiva, reorganización de carpetas ni borrado sin tu autorización expresa.
 
-## 9. Preguntas abiertas para ti
+## 9. Decisiones sobre el índice (respondidas el 18-11-2026)
 
-1. ¿Qué carpetas quieres excluir del índice? (propuesta: plantillas de ejemplo y NOTION)
-2. ¿Los informes diarios de noticias deben poder buscarse por contenido o basta título y fecha?
-3. ¿Las colecciones «Seguimiento» y «Operaciones» siguen en Craft, o quieres que el módulo de tareas del Hub las absorba más adelante?
-4. ¿Existe en Cowork algún documento o carpeta local de memoria que quieras convertir en el «Contexto para asistentes» compartido?
-5. ¿Autorizas, llegado el momento, una carpeta «Personal Hub» en Craft donde el Hub pueda escribir?
+1. **Carpetas excluidas:** las plantillas de ejemplo de Craft (las de «Sin clasificar» como *Q3 Planning Meeting*, *Lumina…*, *Weekly Review Guide*, y la carpeta «How to use Craft») y la carpeta NOTION. **PERSONAL se indexa entera**, porque en ella viven la memoria del resumen diario y sus apuntes (punto 4).
+2. **Informes diarios de noticias:** solo título, fecha y extracto. Para leer uno entero, se abre en Craft.
+3. **Colecciones «Seguimiento» y «Operaciones»:** siguen en Craft. El Hub las enlaza y muestra su recuento; no las absorbe.
+4. **Contexto para asistentes:** no hace falta crear un documento nuevo. Ya existe la memoria que mantiene el resumen diario de Cowork:
+   - «🧠 Memoria e Información Importante» (`f1422cc7-82fa-9911-d31b-637c6f868433`), con los hechos duraderos;
+   - «✍️ Apuntes pendientes», la Bandeja (`096acea6-3228-b48c-ce24-1bdaed2a9f35`), con la captura rápida.
+
+   Las dos están en PERSONAL. Cowork las actualiza cada mañana a partir del «📝 Cierre del día» del Informe Diario anterior y de la Bandeja; esos informes, a su vez, se nutren del calendario, el correo y las fichas de «Seguimiento». El Hub las indexa en **solo lectura**: **nunca las edita**, porque las escribe Cowork.
+   - Detalle para el indexador: el bloque raíz de la Memoria no contiene el título, sino el texto «Última actualización: …». El título visible se toma del primer encabezado, con un nombre fijo como respaldo.
+5. **Carpeta «Personal Hub» con escritura:** no se ha preguntado aún. No hace falta hasta que el Hub quiera publicar en Craft.
 
 ## Fuentes
 

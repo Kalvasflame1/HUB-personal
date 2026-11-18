@@ -14,6 +14,8 @@ import { jobLabel, log, runJob, type JobFn } from "./jobs.ts";
 import { syncStrava } from "./strava/sync.ts";
 import { fetchWeb } from "./web/fetch.ts";
 import { generateReport } from "./reports.ts";
+import { backup } from "./backup.ts";
+import { indexCraft } from "./craft/index.ts";
 
 const TZ = "Europe/Madrid";
 
@@ -33,6 +35,8 @@ const JOBS: Spec[] = [
   { name: "report_daily", at: "06:30", fn: (db) => generateReport(db, "daily"), staleAfter: 26 * 60 },
   { name: "report_weekly", at: "07:00", weekday: 0, fn: (db) => generateReport(db, "weekly"), staleAfter: 8 * 24 * 60 },
   { name: "report_monthly", at: "07:00", monthday: 1, fn: (db) => generateReport(db, "monthly"), staleAfter: 32 * 24 * 60 },
+  { name: "craft_index", every: 60, fn: (db) => indexCraft(db), staleAfter: 6 * 60 },
+  { name: "backup", at: "03:30", fn: backup, staleAfter: 3 * 24 * 60 },
   { name: "watchdog", every: 60, fn: watchdog, staleAfter: 0 },
 ];
 

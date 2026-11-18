@@ -293,6 +293,7 @@ create table public.kb_documents (
   search_text      text,              -- texto plano para buscar; no es la copia maestra
   content_hash     text,              -- para saltar documentos sin cambios
   source_updated_at timestamptz,
+  source_url       text,              -- enlace craftdocs:// que da la API (migración 20261118000000)
   indexed_at       timestamptz not null default now(),
   deleted_at       timestamptz,       -- desapareció de Craft
   fts tsvector generated always as (

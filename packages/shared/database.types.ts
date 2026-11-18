@@ -83,14 +83,14 @@ isOneToOne: false
                   ]
                 },"kb_documents": {
                   Row: {
-                    "content_hash": string | null,"deleted_at": string | null,"doc_kind": string | null,"excerpt": string | null,"external_id": string,"folder_path": string | null,"fts": unknown,"id": string,"indexed_at": string,"search_text": string | null,"source": string,"source_updated_at": string | null,"title": string,"user_id": string
+                    "content_hash": string | null,"deleted_at": string | null,"doc_kind": string | null,"excerpt": string | null,"external_id": string,"folder_path": string | null,"fts": unknown,"id": string,"indexed_at": string,"search_text": string | null,"source": string,"source_updated_at": string | null,"source_url": string | null,"title": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "content_hash"?: string | null,"deleted_at"?: string | null,"doc_kind"?: string | null,"excerpt"?: string | null,"external_id": string,"folder_path"?: string | null,"fts"?: never,"id"?: string,"indexed_at"?: string,"search_text"?: string | null,"source"?: string,"source_updated_at"?: string | null,"title": string,"user_id": string
+                    "content_hash"?: string | null,"deleted_at"?: string | null,"doc_kind"?: string | null,"excerpt"?: string | null,"external_id": string,"folder_path"?: string | null,"fts"?: never,"id"?: string,"indexed_at"?: string,"search_text"?: string | null,"source"?: string,"source_updated_at"?: string | null,"source_url"?: string | null,"title": string,"user_id": string
                   }
                   Update: {
-                    "content_hash"?: string | null,"deleted_at"?: string | null,"doc_kind"?: string | null,"excerpt"?: string | null,"external_id"?: string,"folder_path"?: string | null,"fts"?: never,"id"?: string,"indexed_at"?: string,"search_text"?: string | null,"source"?: string,"source_updated_at"?: string | null,"title"?: string,"user_id"?: string
+                    "content_hash"?: string | null,"deleted_at"?: string | null,"doc_kind"?: string | null,"excerpt"?: string | null,"external_id"?: string,"folder_path"?: string | null,"fts"?: never,"id"?: string,"indexed_at"?: string,"search_text"?: string | null,"source"?: string,"source_updated_at"?: string | null,"source_url"?: string | null,"title"?: string,"user_id"?: string
                   }
                   Relationships: [
                     

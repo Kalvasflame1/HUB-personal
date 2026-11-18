@@ -149,18 +149,24 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 | `report_weekly` | Lunes 07:00 | Activa |
 | `report_monthly` | Día 1, 07:00 | Activa |
 | `watchdog` | Cada hora: avisa si una tarea lleva demasiado sin terminar bien | Activa |
-| `craft_index` | Cada hora | Pendiente de la conexión con Craft |
-| `backup` | 03:00 | Pendiente de elegir carpeta |
+| `craft_index` | Cada hora (solo lee lo modificado) | Activa |
+| `backup` | 03:30 | Activa (copia local comprobada, §10) |
 | `cleanup` | Domingo 04:00 | Pendiente de tu autorización |
 
 6. Avisos: si una tarea falla se crea un aviso (solo el primero de una racha de fallos); si lleva demasiado sin terminar bien, otro, como máximo uno al día.
 
 ## 8. Craft (Fase 4)
 
-1. 👤 En Craft → **Connections**: crear una conexión de API con acceso de **solo lectura** al espacio «HOME MARCOS» (o a las carpetas que decidas en KNOWLEDGE_BASE.md §9).
-2. 👤 Copiar la URL y la credencial al `.env` del worker.
-3. 🤖 Primera indexación y revisión conjunta de qué ha entrado.
-4. 👤 Para revocar: borrar la conexión en Craft.
+1. 👤 En Craft → **Imagine / Connections**: conexión de **API** «API para HUB Personal» al espacio «HOME MARCOS», solo lectura. Hecho el 18-11-2026; su especificación (`/openapi.json`) solo tiene operaciones GET. Es independiente del conector de Craft que usa Cowork.
+2. 👤 URL y clave en `apps/worker/.env` como `CRAFT_API_URL` y `CRAFT_API_KEY`.
+3. 🤖 Indexador `apps/worker/src/craft/index.ts`, tarea `craft_index` cada hora:
+   - Recorre carpetas, «Sin clasificar» y notas diarias. Excluye «How to use Craft», NOTION, las plantillas de ejemplo, Plantillas y Papelera (KNOWLEDGE_BASE §9).
+   - Solo vuelve a leer los documentos cuya fecha de modificación cambió. Los que desaparecen se marcan con `deleted_at`.
+   - Del 📰 Informe Diario guarda título, fecha y extracto; del resto, el texto completo para buscar.
+   - Respeta el límite de Craft (100 peticiones/min): una petición cada 0,7 s. La primera pasada tarda unos 3 minutos.
+   - Manual: `npm run craft:index --workspace apps/worker` (añadir `-- --full` para releerlo todo).
+4. 🤖 Búsqueda en la pantalla Conocimiento (texto completo en español de Postgres). Cada resultado abre el original con el enlace `craftdocs://` que da la API.
+5. 👤 Para revocar: borrar la conexión en Craft. El índice existente se queda, pero deja de actualizarse.
 
 ## 9. Asistente con Claude (Fase 5)
 
@@ -174,10 +180,22 @@ Antes de nada: **verificar en el centro de ayuda de Anthropic cómo se factura h
 
 ## 10. Copias de seguridad y restauración
 
-- `pg_dump` nocturno a `BACKUP_DIR`, comprimido, con retención de 30 días.
-- La carpeta entra en Time Machine.
-- Prueba de restauración en un proyecto local de Supabase al cerrar la Fase 4.
-- El código está en Git; los secretos, en tu gestor de contraseñas. Con esas tres cosas el Hub se reconstruye desde cero.
+Tarea `backup` del worker (`apps/worker/src/backup.ts`), cada noche a las 03:30:
+
+1. 🤖 Vuelca todas las tablas de `public` (solo las filas del usuario) a `hub-AAAA-MM-DD.json.gz`. El esquema `private` (tokens de Strava) **no** se copia: tras una restauración basta con repetir `npm run strava:auth`. No hace falta `pg_dump`.
+2. 🤖 La guarda en `~/Library/Application Support/PersonalHub/backups` (`BACKUP_LOCAL_DIR`) y la **comprueba**: vuelve a leer el archivo y carga cada tabla en una tabla temporal con la estructura actual, dentro de una transacción que se deshace. No toca los datos reales.
+3. 🤖 Conserva las 30 copias más recientes y borra las anteriores.
+
+Las copias se quedan solo en este Mac (decisión del 18-11-2026). No van a iCloud Drive porque macOS no deja entrar en él a un proceso de launchd si no se le da «Acceso total al disco», y ese permiso valdría para cualquier script de Node.
+
+Comandos:
+
+- `npm run backup --workspace apps/worker`: copia ahora.
+- `npm run backup --workspace apps/worker -- --verify=RUTA`: solo comprueba un archivo de copia.
+
+**Restaurar** (manual, solo con autorización, porque sobrescribe datos): descomprimir la copia y, tabla por tabla, insertar las filas con `json_populate_recordset`, el mismo método que usa la comprobación. Antes, sacar una copia del estado actual.
+
+El código está en Git y los secretos en tu gestor de contraseñas; con eso y la copia, el Hub se reconstruye desde cero.
 
 ## 11. Rotación de credenciales
 

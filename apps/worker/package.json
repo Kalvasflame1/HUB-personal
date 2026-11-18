@@ -10,6 +10,8 @@
     "strava:sync": "node --env-file=.env src/strava/sync.ts",
     "web:fetch": "node --env-file=.env src/web/fetch.ts",
     "report": "node --env-file=.env src/reports.ts",
+    "backup": "node --env-file=.env src/backup.ts",
+    "craft:index": "node --env-file=.env src/craft/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "engines": {

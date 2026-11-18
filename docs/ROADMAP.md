@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026 (faltan la renovación del token, los detalles antiguos y un entrenamiento nuevo). Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; pendientes Craft, copias y limpieza.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026 (faltan la renovación del token, los detalles antiguos y un entrenamiento nuevo). Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; copia nocturna local e índice de Craft hechos; pendientes enlaces documento–tarea y limpieza.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -91,7 +91,7 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 
 **Hecho cuando:** los kilómetros del mes en curso y de los dos anteriores coinciden con los que muestra Strava, y un entrenamiento nuevo aparece tras ejecutar la sincronización.
 
-Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y noviembre 61,11 km (7), idénticos a Strava. Pendiente: ver aparecer un entrenamiento nuevo.
+Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y noviembre 61,11 km (7), idénticos a Strava. El mismo día, la «Carrera de noche» de 6,58 km (20:10) entró sola en la sincronización programada de las 20:14, con sus 3 vueltas y 6 mejores esfuerzos.
 
 ## Fase 4 · Automatizaciones
 
@@ -100,11 +100,11 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 - [x] F4-3 Sincronización de Strava cada 30 min (hasta 90 detalles por ejecución)
 - [ ] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica (recogida hecha y probada, con detección automática del feed; limpieza pendiente de autorizar)
 - [x] F4-5 Informes diario, semanal y mensual con plantilla (sin IA)
-- [ ] F4-6 Conexión de solo lectura con Craft e índice de búsqueda (nivel B)
-- [ ] F4-7 Pantalla de búsqueda en Conocimiento y enlaces documento–tarea–proyecto
+- [x] F4-6 Conexión de solo lectura con Craft e índice de búsqueda (nivel B) (18-11-2026: conexión de API propia, solo GET; 220 documentos indexados en la primera pasada; revisión incremental cada hora)
+- [ ] F4-7 Pantalla de búsqueda en Conocimiento y enlaces documento–tarea–proyecto (búsqueda hecha el 18-11-2026; faltan los enlaces con tareas y proyectos)
 - [x] F4-8 Historial de automatizaciones y control de errores en Productividad (último estado por tarea y errores de 7 días)
 - [x] F4-9 Avisos cuando una tarea falla o lleva demasiado sin ejecutarse
-- [ ] F4-10 Copia nocturna y prueba de restauración
+- [x] F4-10 Copia nocturna y prueba de restauración (18-11-2026: copia local diaria a las 03:30, comprobada en cada ejecución con una restauración a tablas temporales; sin iCloud Drive por decisión del usuario)
 - [ ] F4-11 Restringir a solo lectura las tablas que únicamente escribe el worker
 
 **Hecho cuando:** tras 72 horas sin intervención, todas las tareas programadas muestran ejecuciones correctas, la búsqueda encuentra un documento de Craft por una palabra de su contenido, y una copia se ha restaurado con éxito.

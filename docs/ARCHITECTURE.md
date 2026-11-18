@@ -121,9 +121,9 @@ Flujo del asistente: la PWA inserta la pregunta en `ai_jobs` → el worker la re
 |---|---|---|---|
 | R1 | **Uso programado de la suscripción de Claude.** En mayo de 2026 Anthropic anunció que `claude -p` y el Agent SDK pasarían a un crédito mensual aparte; en junio se pausó; hay informaciones no confirmadas de que se reactivó en octubre. No he encontrado fuente oficial concluyente | Los trabajos de IA automáticos podrían consumir un crédito limitado o generar coste | IA opcional por diseño. Verificar en el centro de ayuda de Anthropic antes de la Fase 5. Tope diario de trabajos. No definir `ANTHROPIC_API_KEY` en el Mac mini (si existe, `claude -p` factura a la API) |
 | R2 | Cowork y Claude Code **no comparten memoria ni sesiones** | El asistente del Hub no «recuerda» lo hablado en Cowork | El puente son los datos compartidos: Craft y Supabase, accesibles desde ambos por conector. Ver KNOWLEDGE_BASE.md |
-| R3 | Supabase gratuito: pausa por inactividad, 500 MB de base de datos, sin copias automáticas | Pérdida de servicio o de datos | El worker mantiene actividad; `pg_dump` nocturno al Mac mini; volumen previsto muy inferior a 500 MB |
+| R3 | Supabase gratuito: pausa por inactividad, 500 MB de base de datos, sin copias automáticas | Pérdida de servicio o de datos | El worker mantiene actividad; copia nocturna local del worker; volumen previsto muy inferior a 500 MB |
 | R4 | Strava: 100 lecturas/15 min y 1.000/día; app nueva limitada a 1 atleta; los datos solo pueden mostrarse a su propietario; las condiciones cambiaron el 1 de junio de 2026 | Importación histórica lenta; restricciones sobre enviar datos a terceros | Importación inicial por lotes en varios días; uso estrictamente personal; revisar el acuerdo de la API al registrar la app, incluida la parte de tratamiento con IA |
-| R5 | API de Craft: 100 peticiones/min por espacio; sin webhooks; no he confirmado qué plan de Craft la incluye | Índice no instantáneo | Sincronización incremental cada hora; conexión de solo lectura |
+| R5 | API de Craft: 100 peticiones/min por espacio; sin webhooks; la conexión se creó sin coste el 18-11-2026 | Índice no instantáneo | Sincronización incremental cada hora; conexión de solo lectura |
 | R6 | PWA en iOS: sin tareas en segundo plano, push solo instalada | Menos «nativa» que una app | Aceptado. El trabajo en segundo plano lo hace el Mac mini |
 | R7 | El Mac mini es punto único de fallo para automatizaciones | Sin sincronización si se apaga | La PWA sigue funcionando con los últimos datos; `job_runs` muestra la última ejecución correcta; aviso si pasan más de N horas |
 | R8 | La clave secreta de Supabase da acceso total | Compromiso del Mac mini = compromiso de datos | Llavero, FileVault, usuario sin sesión remota abierta, rotación documentada |
@@ -138,7 +138,7 @@ Flujo del asistente: la PWA inserta la pregunta en `ai_jobs` → el worker la re
 - HTTPS en todos los tramos. Cabeceras de seguridad (CSP, HSTS) en Next.js.
 - Conexión de Craft de **solo lectura** mientras no autorices escritura.
 - Mac mini: FileVault, cortafuegos activo, actualizaciones automáticas, sin «Sesión remota» salvo necesidad.
-- Copias: `pg_dump` nocturno cifrado en disco local + Time Machine. Prueba de restauración en la Fase 4.
+- Copias: volcado JSON nocturno de `public`, en disco local, comprobado en cada ejecución con una restauración a tablas temporales. No se copian los secretos de `private`. Detalle en SETUP §10.
 - Registro de errores en `job_runs`; sin datos personales en logs de terceros.
 
 ## 8. Estructura de carpetas propuesta
@@ -189,13 +189,13 @@ hub-personal/
 | `HUB_USER_ID` | worker | No | UUID del único usuario, para escribir filas a su nombre |
 | `STRAVA_CLIENT_ID` | worker | No | App de Strava |
 | `STRAVA_CLIENT_SECRET` | worker | **Sí** | App de Strava |
-| `CRAFT_API_URL` | worker | **Sí** | URL de la conexión de Craft (contiene credencial) |
-| `CRAFT_API_KEY` | worker | **Sí** | Si la conexión usa clave aparte |
+| `CRAFT_API_URL` | worker | **Sí** | URL de la conexión de API de Craft (`https://connect.craft.do/links/…/api/v1`) |
+| `CRAFT_API_KEY` | worker | **Sí** | Clave de esa conexión (`pdk_…`), enviada como `Authorization: Bearer` |
 | `CRAFT_SPACE_ID` | worker / web | No | Para construir enlaces `craftdocs://` |
 | `AI_PROVIDER` | worker | No | `none` \| `claude_cli` \| `anthropic_api` |
 | `AI_MAX_JOBS_PER_DAY` | worker | No | Tope de seguridad |
 | `CLAUDE_CODE_OAUTH_TOKEN` | worker | **Sí** | Solo si se usa `claude_cli` sin sesión interactiva (verificar el mecanismo vigente) |
-| `BACKUP_DIR` | worker | No | Carpeta local de copias |
+| `BACKUP_LOCAL_DIR` | worker | No | Carpeta local de copias (por defecto `~/Library/Application Support/PersonalHub/backups`) |
 | `TZ` | worker | No | `Europe/Madrid` |
 
 Los tokens de acceso y refresco de Strava no son variables de entorno: se guardan en `private.strava_tokens` porque rotan.
