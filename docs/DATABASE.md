@@ -356,8 +356,17 @@ revoke all on schema private from anon, authenticated;
 
 Matices:
 
-- Las tablas que solo escribe el worker (`strava_activities`, `strava_laps`, `personal_records`, `job_runs`, `reports`, `kb_documents`, `web_items`, `notifications`) podrían limitarse a `select` para `authenticated`. Propuesta: empezar con la política única y restringir en la Fase 4, cuando el worker exista.
-- El worker usa la clave secreta, que salta RLS. Por eso siempre escribe `user_id = HUB_USER_ID` de forma explícita.
+- **Restricción aplicada el 18-11-2026** (migración `20261118100000_restrict_worker_tables.sql`, F4-11). Qué puede hacer la web (`authenticated`) en cada tabla:
+
+| Permiso de la web | Tablas |
+|---|---|
+| Solo lectura | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `job_runs`, `kb_documents`, `reports` |
+| Lectura y cambiar una casilla | `web_items` (`is_read`, `is_saved`), `notifications` (`read_at`) |
+| Leer y añadir | `activity_log` |
+| Todo (`owner_all`) | `tasks`, `projects`, `kb_links`, `web_sources`, `profiles`, `ai_jobs`, `assistant_conversations`, `assistant_messages` |
+
+  Para las de solo lectura se quitan además los permisos de escritura del rol (`revoke insert, update, delete`). Los borrados en cascada (por ejemplo, borrar una fuente web borra sus lecturas) siguen funcionando. Comprobado con el rol `authenticated` en una transacción deshecha: lo permitido funciona y lo demás da *permission denied*.
+- El worker entra por el pooler con el rol propietario de la base de datos, que no pasa por RLS. Por eso siempre escribe `user_id = HUB_USER_ID` de forma explícita.
 - `anon` no tiene ninguna política: sin sesión no se lee nada. Es el criterio de aceptación 8.
 
 ## 5. Vistas de estadísticas

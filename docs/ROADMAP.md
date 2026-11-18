@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 cerrada el 18-11-2026. Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; copia nocturna local e índice de Craft hechos; limpieza semanal activa; enlaces documento–tarea hechos; pendientes la restricción RLS y la prueba de 72 horas.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 cerrada el 18-11-2026. Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; copia nocturna local e índice de Craft hechos; limpieza semanal activa; enlaces documento–tarea hechos; restricción RLS aplicada; pendiente la prueba de 72 horas.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -105,7 +105,7 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 - [x] F4-8 Historial de automatizaciones y control de errores en Productividad (último estado por tarea y errores de 7 días)
 - [x] F4-9 Avisos cuando una tarea falla o lleva demasiado sin ejecutarse
 - [x] F4-10 Copia nocturna y prueba de restauración (18-11-2026: copia local diaria a las 03:30, comprobada en cada ejecución con una restauración a tablas temporales; sin iCloud Drive por decisión del usuario)
-- [ ] F4-11 Restringir a solo lectura las tablas que únicamente escribe el worker
+- [x] F4-11 Restringir a solo lectura las tablas que únicamente escribe el worker (18-11-2026; detalle en DATABASE §4)
 
 **Hecho cuando:** tras 72 horas sin intervención, todas las tareas programadas muestran ejecuciones correctas, la búsqueda encuentra un documento de Craft por una palabra de su contenido, y una copia se ha restaurado con éxito.
 
