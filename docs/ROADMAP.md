@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026 (faltan la renovación del token, los detalles antiguos y un entrenamiento nuevo). Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; copia nocturna local e índice de Craft hechos; pendientes enlaces documento–tarea y limpieza.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026 (faltan la renovación del token, los detalles antiguos y un entrenamiento nuevo). Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; copia nocturna local e índice de Craft hechos; limpieza semanal activa; pendientes enlaces documento–tarea y restricción RLS.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -98,7 +98,7 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 - [x] F4-1 Worker en Node con planificador y registro en `job_runs` (`apps/worker/src/index.ts`; probado a mano el 17-11-2026)
 - [x] F4-2 Servicio de `launchd` con arranque y reinicio automáticos (instalado con autorización el 17-11-2026: `com.personalhub.worker`, registro en `~/Library/Logs/hub-worker.log`)
 - [x] F4-3 Sincronización de Strava cada 30 min (hasta 90 detalles por ejecución)
-- [ ] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica (recogida hecha y probada, con detección automática del feed; limpieza pendiente de autorizar)
+- [x] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica (recogida con detección automática del feed; limpieza semanal autorizada y activa desde el 18-11-2026)
 - [x] F4-5 Informes diario, semanal y mensual con plantilla (sin IA)
 - [x] F4-6 Conexión de solo lectura con Craft e índice de búsqueda (nivel B) (18-11-2026: conexión de API propia, solo GET; 220 documentos indexados en la primera pasada; revisión incremental cada hora)
 - [ ] F4-7 Pantalla de búsqueda en Conocimiento y enlaces documento–tarea–proyecto (búsqueda hecha el 18-11-2026; faltan los enlaces con tareas y proyectos)

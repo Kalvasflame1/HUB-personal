@@ -151,7 +151,7 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 | `watchdog` | Cada hora: avisa si una tarea lleva demasiado sin terminar bien | Activa |
 | `craft_index` | Cada hora (solo lee lo modificado) | Activa |
 | `backup` | 03:30 | Activa (copia local comprobada, §10) |
-| `cleanup` | Domingo 04:00 | Pendiente de tu autorización |
+| `cleanup` | Domingo 04:00 | Activa (reglas en §10) |
 
 6. Avisos: si una tarea falla se crea un aviso (solo el primero de una racha de fallos); si lleva demasiado sin terminar bien, otro, como máximo uno al día.
 
@@ -192,6 +192,22 @@ Comandos:
 
 - `npm run backup --workspace apps/worker`: copia ahora.
 - `npm run backup --workspace apps/worker -- --verify=RUTA`: solo comprueba un archivo de copia.
+
+**Limpieza semanal** (`apps/worker/src/cleanup.ts`, domingos 04:00). Reglas autorizadas el 18-11-2026:
+
+| Tabla | Se borra |
+|---|---|
+| `web_items` | Lecturas de más de 90 días no guardadas |
+| `job_runs` | Ejecuciones de más de 180 días |
+| `notifications` | Avisos leídos hace más de 90 días |
+| `activity_log` | Entradas del feed de más de 365 días |
+
+- No toca Strava, tareas, proyectos, informes, el índice de Craft ni los datos de demostración.
+- Solo actúa si hay una copia de seguridad correcta de las últimas 24 horas. Si no la hay, falla y crea un aviso.
+- Todo se borra en una sola transacción.
+- Para ver qué borraría sin borrar nada: `npm run cleanup --workspace apps/worker -- --dry-run`.
+
+Borrado puntual del 18-11-2026, autorizado y con copia previa: 511 entradas «carrera importada» que la importación del historial de Strava había dejado en el feed. Para que no vuelva a pasar, la sincronización solo anota en el feed las carreras de los últimos 7 días.
 
 **Restaurar** (manual, solo con autorización, porque sobrescribe datos): descomprimir la copia y, tabla por tabla, insertar las filas con `json_populate_recordset`, el mismo método que usa la comprobación. Antes, sacar una copia del estado actual.
 

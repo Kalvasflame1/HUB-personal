@@ -201,7 +201,8 @@ export async function syncStrava(db: pg.Client, opts: SyncOptions = {}): Promise
 
     // Entradas en la actividad reciente, solo para carreras nuevas en sincronizaciones normales
     if (!firstImport && !FULL) {
-      for (const a of newRuns) {
+      // Solo carreras recientes: una importación reanudada no debe llenar el feed con el historial
+      for (const a of newRuns.filter((r) => Date.now() - new Date(r.start_date).getTime() < 7 * 86_400_000)) {
         await db.query(
           `insert into public.activity_log (user_id, occurred_at, kind, title, entity_type, entity_id)
            values ($1, $2, 'run_imported', $3, 'strava_activity', $4)`,
