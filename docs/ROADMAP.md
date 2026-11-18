@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 casi cerrada el 17-11-2026 (faltan la renovación del token, los detalles antiguos y un entrenamiento nuevo). Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; copia nocturna local e índice de Craft hechos; limpieza semanal activa; pendientes enlaces documento–tarea y restricción RLS.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 cerrada el 18-11-2026. Fase 4 en curso: worker, fuentes web, informes y avisos hechos; worker instalado en launchd; copia nocturna local e índice de Craft hechos; limpieza semanal activa; enlaces documento–tarea hechos; pendientes la restricción RLS y la prueba de 72 horas.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -79,8 +79,8 @@ La primera entrega del briefing (§9) corresponde al cierre de la Fase 2.
 
 - [x] F3-1 Registro de la app de Strava y revisión del acuerdo de la API (se reutilizó la aplicación que ya existía en la cuenta; Strava solo permite una)
 - [x] F3-2 Script de autorización OAuth y guardado de tokens en `private` (`npm run strava:auth --workspace apps/worker`; permiso `read,activity:read_all`, 17-11-2026)
-- [ ] F3-3 Renovación automática del token (implementada en `getAccessToken`; se comprobará la primera vez que caduque, a las 6 h)
-- [ ] F3-4 Importación histórica por lotes con control de límites (1.476 actividades importadas el 17-11-2026; los detalles de ~1.000 carreras antiguas se completan en segundo plano en uno o dos días)
+- [x] F3-3 Renovación automática del token (comprobada: el worker lo renovó solo; última renovación el 18-11-2026 a las 18:12)
+- [x] F3-4 Importación histórica por lotes con control de límites (1.476 actividades importadas el 17-11-2026; detalles de todas las carreras completados el 18-11-2026)
 - [x] F3-5 Sincronización incremental (ejecución manual por ahora: `npm run strava:sync --workspace apps/worker`)
 - [x] F3-6 Estadísticas: semanal, mensual (12 meses), comparativa del mes en curso con los mismos días del anterior
 - [x] F3-7 Marcas personales por distancia (desde `strava_best_efforts`; mejorarán al completarse los detalles antiguos)
@@ -101,7 +101,7 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 - [x] F4-4 Recogida de fuentes web (RSS/Atom) y limpieza periódica (recogida con detección automática del feed; limpieza semanal autorizada y activa desde el 18-11-2026)
 - [x] F4-5 Informes diario, semanal y mensual con plantilla (sin IA)
 - [x] F4-6 Conexión de solo lectura con Craft e índice de búsqueda (nivel B) (18-11-2026: conexión de API propia, solo GET; 220 documentos indexados en la primera pasada; revisión incremental cada hora)
-- [ ] F4-7 Pantalla de búsqueda en Conocimiento y enlaces documento–tarea–proyecto (búsqueda hecha el 18-11-2026; faltan los enlaces con tareas y proyectos)
+- [x] F4-7 Pantalla de búsqueda en Conocimiento y enlaces documento–tarea–proyecto (18-11-2026: se vincula desde cada resultado de búsqueda; Productividad muestra los documentos bajo cada tarea y proyecto)
 - [x] F4-8 Historial de automatizaciones y control de errores en Productividad (último estado por tarea y errores de 7 días)
 - [x] F4-9 Avisos cuando una tarea falla o lleva demasiado sin ejecutarse
 - [x] F4-10 Copia nocturna y prueba de restauración (18-11-2026: copia local diaria a las 03:30, comprobada en cada ejecución con una restauración a tablas temporales; sin iCloud Drive por decisión del usuario)

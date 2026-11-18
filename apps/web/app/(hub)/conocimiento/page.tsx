@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ArrowUpRight, Search } from "lucide-react";
+import { ArrowUpRight, Link2, Search, X } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, Empty, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
 import { relative } from "@/lib/format";
+import { linkDocument, unlinkDocument } from "./actions";
 import { ARTIFACTS, CRAFT_DOCS, CRAFT_FOLDERS, craftUrl, type KnowledgeLink } from "@/lib/knowledge";
 
 export const metadata: Metadata = { title: "Conocimiento" };
@@ -57,6 +58,50 @@ function snippet(text: string | null, q: string, fallback: string | null) {
   return `${start > 0 ? "… " : ""}${piece}${start + 260 < text.length ? " …" : ""}`;
 }
 
+type LinkItem = { id: string; kind: string; name: string; key: string };
+type Targets = { projects: { id: string; name: string }[]; tasks: { id: string; name: string }[] };
+
+function LinkControls({ documentId, links, targets }: { documentId: string; links: LinkItem[]; targets: Targets }) {
+  const linked = new Set(links.map((l) => l.key));
+  const hasTargets = targets.projects.length + targets.tasks.length > 0;
+  return (
+    <div className="-mt-1 flex flex-wrap items-center gap-2 pb-3">
+      {links.map((l) => (
+        <form key={l.id} action={unlinkDocument} className="flex items-center gap-1 rounded-full bg-surface-2 py-0.5 pl-2.5 pr-1 text-[12px] text-ink-2">
+          <Link2 size={12} aria-hidden />
+          <span className="max-w-[16rem] truncate">{l.kind}: {l.name}</span>
+          <input type="hidden" name="id" value={l.id} />
+          <button type="submit" aria-label={`Quitar el vínculo con ${l.name}`} className="press grid size-5 place-items-center rounded-full text-ink-3 hover:text-bad">
+            <X size={12} aria-hidden />
+          </button>
+        </form>
+      ))}
+      {hasTargets ? (
+        <form action={linkDocument} className="flex items-center gap-1.5">
+          <input type="hidden" name="document_id" value={documentId} />
+          <label htmlFor={`target-${documentId}`} className="sr-only">Vincular con una tarea o un proyecto</label>
+          <select id={`target-${documentId}`} name="target" required defaultValue="" className="h-8 max-w-[14rem] rounded-lg border border-line bg-bg px-2 text-[13px] text-ink-2 outline-none focus:border-accent">
+            <option value="" disabled>Vincular con…</option>
+            {targets.projects.length ? (
+              <optgroup label="Proyectos">
+                {targets.projects.filter((p) => !linked.has(`project:${p.id}`)).map((p) => <option key={p.id} value={`project:${p.id}`}>{p.name}</option>)}
+              </optgroup>
+            ) : null}
+            {targets.tasks.length ? (
+              <optgroup label="Tareas abiertas">
+                {targets.tasks.filter((t) => !linked.has(`task:${t.id}`)).map((t) => <option key={t.id} value={`task:${t.id}`}>{t.name}</option>)}
+              </optgroup>
+            ) : null}
+          </select>
+          <button type="submit" className="press h-8 rounded-lg border border-line px-2.5 text-[13px] font-medium text-ink-2 hover:border-accent hover:text-accent">
+            Vincular
+          </button>
+        </form>
+      ) : null}
+    </div>
+  );
+}
+
 async function Content({ query }: { query: Promise<string> }) {
   const q = await query;
   const { supabase } = await getSession();
@@ -76,6 +121,33 @@ async function Content({ query }: { query: Promise<string> }) {
   const results = resultsRes.data;
   const indexed = countsRes.data ?? [];
   const lastRun = jobRes.data?.[0];
+
+  // Vínculos de los resultados y destinos posibles (proyectos activos y tareas abiertas)
+  const linksByDoc = new Map<string, LinkItem[]>();
+  let targets: Targets = { projects: [], tasks: [] };
+  if (results?.length) {
+    const [linksRes, projectsRes, tasksRes] = await Promise.all([
+      supabase.from("kb_links").select("id,document_id,entity_type,entity_id").in("document_id", results.map((r) => r.id)),
+      supabase.from("projects").select("id,name").eq("status", "active").order("name"),
+      supabase.from("tasks").select("id,title,status").in("status", ["todo", "doing"]).order("title").limit(200),
+    ]);
+    targets = { projects: projectsRes.data ?? [], tasks: (tasksRes.data ?? []).map((t) => ({ id: t.id, name: t.title })) };
+    const names = new Map<string, string>([...targets.projects.map((p) => [`project:${p.id}`, p.name] as const), ...targets.tasks.map((t) => [`task:${t.id}`, t.name] as const)]);
+    // Tareas ya cerradas que sigan vinculadas: se busca su título aparte
+    const missing = (linksRes.data ?? []).filter((l) => !names.has(`${l.entity_type}:${l.entity_id}`) && l.entity_type === "task").map((l) => l.entity_id);
+    if (missing.length) {
+      const { data } = await supabase.from("tasks").select("id,title").in("id", missing);
+      for (const t of data ?? []) names.set(`task:${t.id}`, t.title);
+    }
+    for (const l of linksRes.data ?? []) {
+      const key = `${l.entity_type}:${l.entity_id}`;
+      const name = names.get(key);
+      if (!name) continue;
+      const list = linksByDoc.get(l.document_id) ?? [];
+      list.push({ id: l.id, kind: l.entity_type === "project" ? "Proyecto" : "Tarea", name, key });
+      linksByDoc.set(l.document_id, list);
+    }
+  }
 
   // Recuento por carpeta de primer nivel, a partir del índice (o del inventario inicial si aún está vacío)
   const byFolder = new Map<string, number>();
@@ -129,6 +201,7 @@ async function Content({ query }: { query: Promise<string> }) {
                     </div>
                     <ArrowUpRight size={16} className="mt-1 shrink-0 text-ink-3" aria-hidden />
                   </a>
+                  <LinkControls documentId={d.id} links={linksByDoc.get(d.id) ?? []} targets={targets} />
                 </li>
               ))}
             </ul>

@@ -80,7 +80,7 @@ Pendiente de verificar al crear la conexión: qué plan de Craft incluye la API,
 - Por documento guarda: identificador, título, ruta de carpeta, tipo, fecha de modificación, extracto y texto plano para búsqueda. **El original no se toca y sigue siendo la referencia.**
 - Sincronización incremental por fecha de modificación y `content_hash`; los documentos borrados en Craft se marcan con `deleted_at`.
 - Búsqueda de texto completo en español en Postgres. La pantalla muestra título, extracto resaltado y el botón «Abrir en Craft».
-- Relación con tareas y proyectos mediante `kb_links`, creada a mano desde la interfaz.
+- Relación con tareas y proyectos mediante `kb_links`, creada a mano desde la interfaz: en Conocimiento, cada resultado tiene «Vincular con…» (proyectos activos y tareas abiertas) y el vínculo se quita con la ✕; Productividad muestra los documentos vinculados bajo cada tarea y proyecto. Hecho el 18-11-2026.
 - Coste: primera indexación de ~210 documentos en pocos minutos; después, unas pocas peticiones por hora.
 
 Qué se indexa por defecto:

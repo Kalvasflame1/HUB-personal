@@ -5,7 +5,8 @@ import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
 import { dayShort, isoDaysAgo, relative, todayISO } from "@/lib/format";
 import { addTask } from "./actions";
-import { TaskRow } from "./task-row";
+import { craftUrl } from "@/lib/knowledge";
+import { DocLinks, TaskRow, type DocLink } from "./task-row";
 
 export const metadata: Metadata = { title: "Productividad" };
 
@@ -35,10 +36,11 @@ const JOB_LABEL: Record<string, string> = {
 
 async function Content() {
   const { supabase } = await getSession();
-  const [tasksRes, projectsRes, jobsRes] = await Promise.all([
+  const [tasksRes, projectsRes, jobsRes, linksRes] = await Promise.all([
     supabase.from("tasks").select("id,title,status,priority,due_date,completed_at,project_id,is_demo").neq("status", "cancelled").order("due_date", { ascending: true, nullsFirst: false }).order("priority").order("position"),
     supabase.from("projects").select("id,name,status,color,is_demo").eq("status", "active").order("created_at"),
     supabase.from("job_runs").select("id,job_name,status,started_at,items,error,details").gte("started_at", isoDaysAgo(7)).order("started_at", { ascending: false }).limit(1000),
+    supabase.from("kb_links").select("id,entity_type,entity_id,kb_documents(title,source_url,external_id,deleted_at)").limit(1000),
   ]);
 
   const tasks = tasksRes.data ?? [];
@@ -52,6 +54,15 @@ async function Content() {
   for (const r of runs) if (r.status === "error") errors7d.set(r.job_name, (errors7d.get(r.job_name) ?? 0) + 1);
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
   const today = todayISO();
+
+  // Documentos de Craft vinculados, por tarea o proyecto
+  const docsFor = new Map<string, DocLink[]>();
+  for (const l of linksRes.data ?? []) {
+    const d = l.kb_documents;
+    if (!d || d.deleted_at) continue;
+    const key = `${l.entity_type}:${l.entity_id}`;
+    docsFor.set(key, [...(docsFor.get(key) ?? []), { title: d.title, href: d.source_url ?? craftUrl(d.external_id) }]);
+  }
 
   const open = tasks.filter((t) => t.status !== "done");
   const groups = [
@@ -117,6 +128,7 @@ async function Content() {
                     meta={[t.project_id ? projectName.get(t.project_id) : null, `Prioridad ${PRIORITY[t.priority].toLowerCase()}`].filter(Boolean).join(" · ")}
                     badge={t.due_date ? dayShort(t.due_date) : undefined}
                     badgeTone={g.key === "overdue" ? "bad" : "neutral"}
+                    docs={docsFor.get(`task:${t.id}`)}
                   />
                 ))}
               </ul>
@@ -129,7 +141,7 @@ async function Content() {
             <p className="mb-1 text-[13px] font-semibold text-ink-2">Completadas recientemente</p>
             <ul className="divide-y divide-line">
               {done.map((t) => (
-                <TaskRow key={t.id} id={t.id} title={t.title} done meta={t.completed_at ? relative(t.completed_at) : undefined} />
+                <TaskRow key={t.id} id={t.id} title={t.title} done meta={t.completed_at ? relative(t.completed_at) : undefined} docs={docsFor.get(`task:${t.id}`)} />
               ))}
             </ul>
           </div>
@@ -156,6 +168,7 @@ async function Content() {
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" role="img" aria-label={`${pct}% completado`}>
                       <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
                     </div>
+                    <DocLinks docs={docsFor.get(`project:${p.id}`)} />
                   </li>
                 );
               })}
