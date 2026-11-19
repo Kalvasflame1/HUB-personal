@@ -43,3 +43,23 @@ export async function deleteTask(formData: FormData) {
   await supabase.from("tasks").delete().eq("id", id);
   refresh();
 }
+
+export async function updateTask(formData: FormData) {
+  const { supabase } = await getSession();
+  const id = String(formData.get("id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  if (!id || !title) return;
+  const project = String(formData.get("project_id") ?? "");
+  const due = String(formData.get("due_date") ?? "");
+  const priority = Number(formData.get("priority") ?? 2);
+  await supabase
+    .from("tasks")
+    .update({
+      title: title.slice(0, 200),
+      project_id: project || null,
+      due_date: /^\d{4}-\d{2}-\d{2}$/.test(due) ? due : null,
+      priority: priority >= 1 && priority <= 4 ? priority : 2,
+    })
+    .eq("id", id);
+  refresh();
+}

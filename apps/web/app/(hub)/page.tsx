@@ -6,6 +6,8 @@ import { Card, CardTitle, DemoBadge, Empty, Pill, SkeletonGrid } from "@/compone
 import { CRAFT_DOCS } from "@/lib/knowledge";
 import { markNotificationRead } from "./actions";
 import { PodcastPlayer } from "@/components/podcast-player";
+import { ReadinessBar } from "@/components/readiness";
+import { loadFitness } from "@/lib/fitness-data";
 import { capitalize, dateLong, dayShort, greeting, num, pace, relative, weekStartISO } from "@/lib/format";
 
 export default function DashboardPage() {
@@ -22,7 +24,7 @@ const LEVEL_TONE = { info: "text-ink-3", success: "text-good", warning: "text-wa
 async function Dashboard() {
   const { supabase, user } = await getSession();
 
-  const [profile, tasks, weekly, activity, reports, notifications, episodes] = await Promise.all([
+  const [profile, tasks, weekly, activity, reports, notifications, episodes, fitness] = await Promise.all([
     supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle(),
     supabase.from("v_tasks_pending").select("id,title,due_date,priority,overdue,project_name,is_demo").order("due_date", { ascending: true, nullsFirst: false }).order("priority"),
     supabase.from("v_running_weekly").select("week_start,km,runs,pace_s_per_km").order("week_start", { ascending: false }).limit(8),
@@ -30,6 +32,7 @@ async function Dashboard() {
     supabase.from("reports").select("id,kind,title,period_start,is_demo").order("period_start", { ascending: false }).limit(3),
     supabase.from("notifications").select("id,level,title,body,link,created_at", { count: "exact" }).is("read_at", null).order("created_at", { ascending: false }).limit(4),
     supabase.from("podcast_episodes").select("id,episode_date,title,storage_path,duration_s").order("episode_date", { ascending: false }).limit(1),
+    loadFitness(supabase), // misma ventana que Running para que los valores coincidan
   ]);
 
   // Último episodio del podcast: URL firmada de 3 horas (el bucket es privado)
@@ -47,13 +50,14 @@ async function Dashboard() {
   const previous = weeks[weeks.length - 2];
   const maxKm = Math.max(1, ...weeks.map((w) => w.km));
   const name = profile.data?.display_name ? capitalize(profile.data.display_name) : "";
+  const nowFitness = fitness.at(-1);
   const anyDemo = pending.some((t) => t.is_demo) || (activity.data ?? []).some((a) => a.is_demo);
 
   return (
     <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
       <Card className="lg:col-span-4">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-[15px] text-ink-2">{capitalize(dateLong(new Date()))}</p>
+          <p className="text-[19px] font-medium text-ink-2 md:text-[22px]">{capitalize(dateLong(new Date()))}</p>
           <DemoBadge show={anyDemo} />
         </div>
         <h1 className="mt-2 text-[32px] font-bold leading-[1.05] tracking-tight md:text-[44px]">
@@ -64,6 +68,11 @@ async function Dashboard() {
           {" "}y llevas <strong className="tnum font-semibold text-ink">{num(current.km, 1)} km</strong> esta semana
           {previous.km > 0 ? <> ({num(previous.km, 1)} km la anterior)</> : null}.
         </p>
+        {nowFitness ? (
+          <Link href="/running" className="press mt-5 block">
+            <ReadinessBar tsb={nowFitness.tsb} />
+          </Link>
+        ) : null}
       </Card>
 
       <Card className="lg:col-span-2">

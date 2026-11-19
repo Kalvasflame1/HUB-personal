@@ -3,7 +3,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, PageHeader, SkeletonGrid, Stat } from "@/components/ui";
-import { HeartRateChart, LoadChart, MonthlyKmChart, PaceChart, WeeklyKmChart, type MonthPoint, type WeekPoint } from "@/components/charts";
+import { FitnessCharts, HeartRateChart, LoadChart, MonthlyKmChart, PaceChart, WeeklyKmChart, type MonthPoint, type WeekPoint } from "@/components/charts";
+import { freshnessText } from "@/lib/fitness";
+import { loadFitness } from "@/lib/fitness-data";
+import { ReadinessBar } from "@/components/readiness";
 import { capitalize, dateShort, dayShort, duration, km, monthName, monthStartISO, num, pace, relative, todayISO, weekStartISO } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Running" };
@@ -25,13 +28,14 @@ const RUN_TYPES = ["Run", "TrailRun", "VirtualRun"];
 
 async function Content() {
   const { supabase } = await getSession();
-  const [weeklyRes, monthlyRes, prsRes, recentRes, mtdRes, syncRes] = await Promise.all([
+  const [weeklyRes, monthlyRes, prsRes, recentRes, mtdRes, syncRes, fitness] = await Promise.all([
     supabase.from("v_running_weekly").select("week_start,km,runs,pace_s_per_km,avg_hr,load").order("week_start", { ascending: false }).limit(12),
     supabase.from("v_running_monthly").select("month_start,km,runs,pace_s_per_km,avg_hr").order("month_start", { ascending: false }).limit(12),
     supabase.from("personal_records").select("distance_key,time_s,achieved_at,activity_id,is_demo").eq("is_current", true),
     supabase.from("strava_activities").select("id,name,start_date,distance_m,moving_time_s,average_heartrate,elevation_gain_m,is_demo").in("sport_type", RUN_TYPES).order("start_date", { ascending: false }).limit(10),
     supabase.from("strava_activities").select("start_date_local,distance_m").in("sport_type", RUN_TYPES).gte("start_date_local", monthStartISO(-1)),
     supabase.from("job_runs").select("finished_at,status,error,details").eq("job_name", "strava_sync").order("started_at", { ascending: false }).limit(1),
+    loadFitness(supabase),
   ]);
 
   const recent = recentRes.data ?? [];
@@ -83,6 +87,7 @@ async function Content() {
   const anyDemo = recent.some((r) => r.is_demo);
 
   const hasHr = weeks.some((w) => w.hr);
+  const nowFitness = fitness.at(-1);
   const syncDetails = (lastSync?.details ?? {}) as { pending_details?: number; demo?: boolean };
   const pendingDetails = Number(syncDetails.pending_details ?? 0);
 
@@ -106,6 +111,16 @@ async function Content() {
           />
           <Stat label={capitalize(monthName(monthStartISO(-1)))} value={num(prevMonthKm, 1)} unit="km" hint={prevMonth?.pace_s_per_km ? `${pace(Number(prevMonth.pace_s_per_km))} min/km` : undefined} />
         </div>
+        {nowFitness ? (
+          <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 border-t border-line pt-5 md:grid-cols-4">
+            <div className="grid grid-cols-3 gap-x-6 md:col-span-2">
+              <Stat label="Forma" value={num(nowFitness.ctl, 1)} hint="CTL · 42 días" />
+              <Stat label="Fatiga" value={num(nowFitness.atl, 1)} hint="ATL · 7 días" />
+              <Stat label="Frescura" value={`${nowFitness.tsb > 0 ? "+" : ""}${num(nowFitness.tsb, 1)}`} hint="TSB" />
+            </div>
+            <ReadinessBar tsb={nowFitness.tsb} className="md:col-span-2" />
+          </div>
+        ) : null}
       </Card>
 
       <Card className="lg:col-span-4">
@@ -121,6 +136,21 @@ async function Content() {
           Carga de la última semana completa ({num(acute)}) entre la media de las cuatro anteriores ({num(chronic)}). Entre 0,8 y 1,3 se considera equilibrada.
         </p>
         <div className="mt-3"><LoadChart data={weeks} /></div>
+      </Card>
+
+      <Card className="lg:col-span-6">
+        <CardTitle>Forma, fatiga y frescura (últimos 12 meses)</CardTitle>
+        {nowFitness ? (
+          <>
+            <p className="-mt-1 mb-4 text-[14px] font-medium">{freshnessText(nowFitness.tsb)}</p>
+            <FitnessCharts data={fitness} />
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-3">
+              Calculado con el esfuerzo relativo de Strava de todas tus actividades. La forma sube despacio con el entrenamiento constante; la fatiga reacciona a los últimos días. Frescura negativa es normal en bloques de carga; por encima de +5 llegas descansado.
+            </p>
+          </>
+        ) : (
+          <Empty title="Sin datos de carga" hint="Hace falta el esfuerzo relativo de Strava, que se calcula en actividades con pulsómetro." />
+        )}
       </Card>
 
       <Card className="lg:col-span-3">
@@ -194,3 +224,4 @@ async function Content() {
     </div>
   );
 }
+

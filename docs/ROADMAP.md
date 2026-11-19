@@ -116,6 +116,10 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
   - **Opción A · sesión del plan:** `claude -p` con tu suscripción iniciada. Sin coste añadido, pero comparte límites con Claude Code y Cowork. Vale con Pro, Max o Ultra.
   - **Opción B · créditos mensuales de API (solo Max/Ultra):** `claude -p` con una clave de una organización de Console vinculada (100 $/mes en Max y 200 $/mes en Ultra). No toca tus límites; al agotarse, se para y no se cobra, salvo que actives la recarga automática. Requiere vincular la organización (acción tuya en claude.ai → Ajustes → Facturación) y guardar la clave en `apps/worker/.env`. Los créditos que no se usan caducan cada mes.
   - En ambas: tope diario de trabajos en el worker y `AI_PROVIDER=none` como interruptor.
+- [ ] F5-11 Configuración del asistente (acordada el 18-11-2026): pantalla Asistente → Configuración y tabla `assistant_settings`, editable desde la web y con historial de versiones.
+  - Se configura: instrucciones generales en texto libre, estilo de respuesta, fuentes activables (tareas, running, informes, web, Craft; posibilidad de excluir PERSONAL), modelo para preguntas sencillas y para informes, tope diario con contador de uso, y atajos de preguntas frecuentes.
+  - El contexto personal se lee de «🧠 Memoria e Información Importante» de Craft, ya indexada; no se duplica.
+  - Las instrucciones no pueden cambiar los permisos (herramientas de solo lectura fijadas por el worker), ni el origen de las cifras (SQL), ni las reglas del proyecto.
 - [ ] F5-2 Asistente sin IA: consultas predefinidas resueltas con SQL (km del mes, evolución del ritmo, tareas pendientes)
 - [ ] F5-3 Instalar la CLI de Claude Code en el Mac mini y proveedor `claude_cli`
 - [ ] F5-4 Cola `ai_jobs` con Realtime, tope diario y medición de consumo
@@ -134,9 +138,11 @@ Sin orden fijado; cada una se planifica aparte.
 
 - **Podcast diario en la app** (empezado el 18-11-2026)
   - [x] Tabla `podcast_episodes`, bucket privado `podcast` y reproductor en Inicio: reproducir/pausa, −15 s, +30 s, barra, velocidad, posición recordada y controles en la pantalla de bloqueo.
-  - [ ] Puente desde el atajo de Siri, que guarda el audio en iCloud, donde launchd no entra: una copia en una carpeta local si el atajo corre en el Mac, o subida directa si corre en el iPhone.
-  - [ ] Tarea del worker: convertir a AAC con `afconvert` (77 MB → ~3,4 MB), subir al bucket y conservar 7 episodios. Necesita la clave `sb_secret_` en `apps/worker/.env`.
+  - [x] Puente desde iCloud resuelto el 18-11-2026: el atajo del Mac «HUB - Podcast» lee `podcast_hoy.txt`, crea el audio con la voz de Siri y lo devuelve. Probado con `shortcuts run "HUB - Podcast" --output-path …` desde un trabajo de launchd: 46 s, 6 min 41 s de audio, y no toca los archivos de iCloud. El worker no entra en iCloud: se lo pide a Atajos.
+  - [ ] Tarea del worker (sábado): hacia las 06:30, lanzar el atajo, convertir a AAC con `afconvert` (77 MB → ~3,4 MB), subir al bucket y conservar 7 episodios. Si el audio es idéntico al del día anterior (Cowork aún no ha dejado guion nuevo), reintentar más tarde. Clave `SUPABASE_SECRET_KEY` ya configurada y comprobada (18-11-2026).
   - [ ] Prueba de voces: ElevenLabs (cuenta propia, 10.000 créditos al mes), una voz premium de macOS y Piper; decisión del usuario.
+- [x] Forma, fatiga y frescura (19-11-2026): CTL 42 días, ATL 7 días y TSB con el esfuerzo relativo de Strava de todas las actividades (`lib/fitness.ts`), en tres paneles enlazados en Running. Valores actuales en el resumen y barra de «Preparación de hoy» (lineal desde la frescura: −30 → 0 %, +15 → 100 %; verde ≥ 60 %, amarilla 35–60 %, roja < 35 %) también en Inicio.
+- [x] Datos de demostración borrados el 19-11-2026 con copia previa; «Personal Hub» se conserva como proyecto real.
 - Widgets del iPhone y Apple Watch: ver la nota de la conversación del 18-11-2026 (Scriptable o Atajos sin coste; app nativa con WidgetKit/watchOS más adelante).
 
 - Apple Health (no tiene API web: exige una app nativa mínima o un Atajo que exporte datos)

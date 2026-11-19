@@ -53,6 +53,7 @@ async function Content() {
   const errors7d = new Map<string, number>();
   for (const r of runs) if (r.status === "error") errors7d.set(r.job_name, (errors7d.get(r.job_name) ?? 0) + 1);
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
+  const projectOptions = projects.map((p) => ({ id: p.id, name: p.name }));
   const today = todayISO();
 
   // Documentos de Craft vinculados, por tarea o proyecto
@@ -129,6 +130,7 @@ async function Content() {
                     badge={t.due_date ? dayShort(t.due_date) : undefined}
                     badgeTone={g.key === "overdue" ? "bad" : "neutral"}
                     docs={docsFor.get(`task:${t.id}`)}
+                    fields={{ projectId: t.project_id, priority: t.priority, dueDate: t.due_date }} projects={projectOptions}
                   />
                 ))}
               </ul>
@@ -141,7 +143,7 @@ async function Content() {
             <p className="mb-1 text-[13px] font-semibold text-ink-2">Completadas recientemente</p>
             <ul className="divide-y divide-line">
               {done.map((t) => (
-                <TaskRow key={t.id} id={t.id} title={t.title} done meta={t.completed_at ? relative(t.completed_at) : undefined} docs={docsFor.get(`task:${t.id}`)} />
+                <TaskRow key={t.id} id={t.id} title={t.title} done meta={t.completed_at ? relative(t.completed_at) : undefined} docs={docsFor.get(`task:${t.id}`)} fields={{ projectId: t.project_id, priority: t.priority, dueDate: t.due_date }} projects={projectOptions} />
               ))}
             </ul>
           </div>
