@@ -97,6 +97,7 @@ Tú decides la lista final de carpetas incluidas y excluidas antes de activar la
 
 ### Nivel C · Consulta contextual con el asistente (Fase 5)
 - El asistente busca primero en el índice (rápido, sin IA) y, si necesita detalle, lee el documento en vivo con el MCP de Craft.
+- **Construido el 21-11-2026 (F5-6) de otra forma:** no se da a Claude el MCP de Craft. El worker lee en vivo, con la conexión de API de solo lectura (`GET /blocks`), los dos documentos propios más relevantes para la pregunta y se los pasa como texto; Claude no tiene herramientas.
 - Las respuestas citan sus fuentes con enlace al original.
 - El asistente puede **proponer** relaciones entre tareas y documentos (`kb_links.created_by = 'assistant'`); tú las confirmas.
 - Depende del riesgo R1 (uso programado de la suscripción). Sin IA, los niveles A y B siguen funcionando.

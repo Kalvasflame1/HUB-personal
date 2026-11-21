@@ -6,6 +6,7 @@
  * respuesta cita, y se guarda con su enlace para mostrarlo como fuente en la web.
  */
 import type pg from "pg";
+import { craft } from "../craft/index.ts";
 
 export type Source = { n: number; label: string; href?: string };
 export type Settings = {
@@ -54,6 +55,54 @@ const clip = (s: string | null | undefined, n: number) => {
   const t = (s ?? "").replace(/\s+\n/g, "\n").trim();
   return t.length > n ? `${t.slice(0, n)}…` : t;
 };
+
+const LIVE_DOCS = 2;          // documentos que se leen enteros en Craft por pregunta
+const LIVE_MAX = 12_000;      // caracteres por documento leído entero
+
+/** Markdown de Craft sin imágenes, enlaces largos ni líneas vacías repetidas. */
+function tidy(md: string) {
+  return md
+    // Filas de tablas (colecciones) de Craft: «- Título · campo: valor · …»
+    .replace(/<collectionItem>([\s\S]*?)<\/collectionItem>/g, (_, inner: string) => {
+      const title = inner.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? "";
+      const props = [...inner.matchAll(/<property name="([^"]+)">([\s\S]*?)<\/property>/g)]
+        .map((m) => [m[1], m[2].trim()]).filter(([, v]) => v && v !== "—").map(([k, v]) => `${k}: ${v}`);
+      return `- ${title}${props.length ? ` · ${props.join(" · ")}` : ""}`;
+    })
+    .replace(/<title>([\s\S]*?)<\/title>/g, "Tabla: $1")
+    .replace(/<properties>[\s\S]*?<\/properties>/g, "")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]*)\]\((?:https?|craftdocs):[^)]*\)/g, "$1")
+    .replace(/<\/?[a-z][^>]*>/gi, "")
+    .replace(/^[ \t]+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * F5-6 · Lectura en vivo (nivel C): el documento entero, recién leído de Craft con la conexión de
+ * solo lectura. Si es muy largo, el principio y los fragmentos que coinciden con la pregunta.
+ * Si Craft no responde, se usa el texto del índice (actualizado cada hora).
+ */
+async function liveDocument(db: pg.Client, uid: string, externalId: string, tsq: string) {
+  let text = "";
+  let live = true;
+  try {
+    text = tidy(await (await craft("/blocks", { id: externalId }, "text/markdown")).text());
+  } catch {
+    live = false;
+  }
+  if (!text) {
+    live = false;
+    const r = await db.query("select search_text from public.kb_documents where user_id = $1 and external_id = $2", [uid, externalId]);
+    text = r.rows[0]?.search_text ?? "";
+  }
+  if (text.length <= LIVE_MAX) return { text, live };
+  const frag = await db.query(
+    `select ts_headline('spanish', $1, to_tsquery('spanish', $2), 'MaxFragments=8, MaxWords=60, MinWords=20, StartSel="", StopSel="", FragmentDelimiter="\n…\n"') f`,
+    [text, tsq]);
+  return { text: `${text.slice(0, 4000)}\n…\n[Fragmentos que coinciden con la pregunta]\n${clip(frag.rows[0]?.f, LIVE_MAX - 4000)}`, live };
+}
 
 /** Palabras demasiado comunes para relacionar un asunto con un documento. */
 const GENERIC = new Set(["palencia", "revisar", "compra", "nov", "dic", "ene", "antes", "fin", "mes", "día", "dia", "días", "nuevo", "nueva", "título", "sin", "plan", "cita", "app"]);
@@ -201,15 +250,28 @@ export async function buildContext(db: pg.Client, uid: string, question: string,
   if (on.craft) {
     const words = wantsLinks ? [] : terms(question);
     if (words.length) {
+      const tsq = words.map((w) => w.replace(/'/g, "")).join(" | ");
       const docs = await db.query(
-        `select title, folder_path, source_url,
+        `select external_id, title, folder_path, source_url,
                 ts_headline('spanish', search_text, q, 'MaxFragments=4, MaxWords=70, MinWords=25, StartSel="", StopSel="", FragmentDelimiter=" … "') frag
            from public.kb_documents, to_tsquery('spanish', $2) q
           where user_id = $1 and deleted_at is null and fts @@ q and external_id <> $3
             and ($4 or coalesce(folder_path, '') not like 'PERSONAL%')
           order by ts_rank(fts, q) desc, source_updated_at desc nulls last limit 5`,
-        [uid, words.map((w) => w.replace(/'/g, "")).join(" | "), MEMORY_ID, !!on.craft_personal]);
-      for (const r of docs.rows) add(`Craft: ${r.title}${r.folder_path ? ` (${r.folder_path})` : ""}`, clip(r.frag, 1400), r.source_url ?? undefined);
+        [uid, tsq, MEMORY_ID, !!on.craft_personal]);
+      // Los más relevantes que sean documentos propios (no noticias ni resúmenes) se leen enteros.
+      let liveLeft = LIVE_DOCS;
+      for (const r of docs.rows) {
+        const where = r.folder_path ? ` (${r.folder_path})` : "";
+        const own = !/^(NOTICIAS|Histórico Resúmenes)/.test(r.folder_path ?? "");
+        if (own && liveLeft > 0) {
+          liveLeft--;
+          const d = await liveDocument(db, uid, r.external_id, tsq);
+          add(`Craft: ${r.title}${where} · documento completo${d.live ? ", leído ahora" : ", del índice"}`, d.text, r.source_url ?? undefined);
+        } else {
+          add(`Craft: ${r.title}${where} · fragmentos`, clip(r.frag, 1400), r.source_url ?? undefined);
+        }
+      }
     }
     if (on.craft_personal) {
       const mem = await db.query("select title, search_text, source_url from public.kb_documents where user_id = $1 and external_id = $2 and deleted_at is null", [uid, MEMORY_ID]);
@@ -235,7 +297,7 @@ export function systemPrompt(settings: Settings) {
     "Reglas fijas:",
     "- Responde siempre en español y tutea.",
     "- Usa solo la información de los bloques numerados que recibes. Si no está ahí, dilo claramente y no inventes.",
-    "- Las cifras deben salir tal cual de los bloques; no calcules estadísticas nuevas salvo sumas o comparaciones evidentes.",
+    "- Las cifras deben salir tal cual de los bloques; no calcules estadísticas nuevas salvo sumas o comparaciones evidentes, y si sumas, dilo («sumando los importes del documento, …») para que se distinga de las cifras calculadas por el Hub.",
     "- Cita los bloques que uses con su número entre corchetes, por ejemplo [2].",
     "- No tienes herramientas ni puedes cambiar nada: si te piden una acción, explica dónde hacerla en la app.",
     "- Texto plano con listas sencillas si hacen falta; sin tablas, sin encabezados y sin emojis.",

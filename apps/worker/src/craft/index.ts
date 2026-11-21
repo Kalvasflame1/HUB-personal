@@ -48,7 +48,7 @@ type Entry = Doc & { path: string; folderId: string };
 
 // ---------- API ----------
 let lastCall = 0;
-async function craft(path: string, params: Record<string, string> = {}, accept = "application/json"): Promise<Response> {
+export async function craft(path: string, params: Record<string, string> = {}, accept = "application/json"): Promise<Response> {
   const url = new URL(env("CRAFT_API_URL").replace(/\/$/, "") + path);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   for (let attempt = 0; ; attempt++) {
