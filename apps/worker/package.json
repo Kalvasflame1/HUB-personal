@@ -15,7 +15,8 @@
     "cleanup": "node --env-file=.env src/cleanup.ts",
     "typecheck": "tsc --noEmit",
     "craft:extras": "node --env-file=.env src/craft/extras.ts",
-    "podcast": "node --env-file=.env src/podcast.ts"
+    "podcast": "node --env-file=.env src/podcast.ts",
+    "ai:ask": "node --env-file=.env src/ai/queue.ts"
   },
   "engines": {
     "node": ">=24"

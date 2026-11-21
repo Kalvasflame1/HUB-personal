@@ -50,3 +50,13 @@ export async function restoreSettings(formData: FormData) {
   await supabase.from("assistant_settings").insert({ ...old, version, note: `Restaurada la versión ${from}` });
   refresh();
 }
+
+/** Encola la pregunta para Claude en el Mac mini y vuelve al Asistente esperando la respuesta. */
+export async function askAi(formData: FormData) {
+  const question = String(formData.get("q") ?? "").trim().slice(0, 1000);
+  if (!question) redirect("/asistente");
+  const { supabase } = await getSession();
+  const { data, error } = await supabase.from("ai_jobs").insert({ kind: "assistant", input: { question } }).select("id").single();
+  if (error || !data) redirect(`/asistente?q=${encodeURIComponent(question)}&ia=error`);
+  redirect(`/asistente?q=${encodeURIComponent(question)}&job=${data.id}`);
+}

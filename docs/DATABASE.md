@@ -279,9 +279,14 @@ create table public.ai_jobs (
   error        text,
   created_at   timestamptz not null default now(),
   started_at   timestamptz,
-  finished_at  timestamptz
+  finished_at  timestamptz,
+  model        text,                  -- haiku | sonnet | opus (F5-4)
+  usage        jsonb                  -- tokens y duración (F5-4)
 );
 create index ai_jobs_queue_idx on public.ai_jobs (status, created_at) where status = 'queued';
+-- F5-4 (20261121300000_ai_jobs_queue.sql): input ≤ 4000 bytes; cada inserción lanza
+-- pg_notify('ai_jobs', id) con el disparador private.ai_jobs_notify() para despertar al worker.
+-- output de una pregunta: {"answer": "...", "sources": [{"n", "label", "href"}], "context_blocks": n}
 
 -- ============ Conocimiento (índice de Craft) ============
 create table public.kb_documents (
@@ -365,8 +370,8 @@ Matices:
 |---|---|
 | Solo lectura | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `job_runs`, `kb_documents`, `reports`, `podcast_episodes`, `craft_events`, `craft_tracking` |
 | Lectura y cambiar una casilla | `web_items` (`is_read`, `is_saved`), `notifications` (`read_at`) |
-| Leer y añadir | `activity_log`, `assistant_settings` (cada guardado es una versión nueva; restaurar es copiar una versión antigua como nueva), `craft_tracking_changes` (solo `external_id`, `changes` y `base`; únicamente asuntos que existen en `craft_tracking` y solo los campos `title`, `category`, `status`, `due_date` y `notes`) |
-| Todo (`owner_all`) | `tasks`, `projects`, `kb_links`, `web_sources`, `profiles`, `ai_jobs`, `assistant_conversations`, `assistant_messages` |
+| Leer y añadir | `activity_log`, `assistant_settings` (cada guardado es una versión nueva; restaurar es copiar una versión antigua como nueva), `craft_tracking_changes` (solo `external_id`, `changes` y `base`; únicamente asuntos que existen en `craft_tracking` y solo los campos `title`, `category`, `status`, `due_date` y `notes`), `ai_jobs` (solo `kind` e `input`; únicamente preguntas `assistant` en cola: estado, respuesta, proveedor y consumo los escribe el worker) |
+| Todo (`owner_all`) | `tasks`, `projects`, `kb_links`, `web_sources`, `profiles`, `assistant_conversations`, `assistant_messages` |
 
   Para las de solo lectura se quitan además los permisos de escritura del rol (`revoke insert, update, delete`). Los borrados en cascada (por ejemplo, borrar una fuente web borra sus lecturas) siguen funcionando. Comprobado con el rol `authenticated` en una transacción deshecha: lo permitido funciona y lo demás da *permission denied*.
 - El worker entra por el pooler con el rol propietario de la base de datos, que no pasa por RLS. Por eso siempre escribe `user_id = HUB_USER_ID` de forma explícita.

@@ -102,7 +102,7 @@ Interfaz única `AiProvider` con tres implementaciones seleccionadas por `AI_PRO
 | `claude_cli` | El worker ejecuta `claude -p` en el Mac mini con herramientas de solo lectura y salida JSON | Fase 5, tras verificar R1 |
 | `anthropic_api` | Llamadas directas a la API | Futuro, solo si lo decides. No se contrata ahora |
 
-Flujo del asistente: la PWA inserta la pregunta en `ai_jobs` → el worker la recibe por Realtime → ejecuta el proveedor → escribe la respuesta → la PWA la muestra. Latencia esperada de varios segundos; aceptable para uso personal. Límites configurables de trabajos por día para no agotar la suscripción.
+Flujo del asistente: la PWA inserta la pregunta en `ai_jobs` → un disparador hace `pg_notify` y el worker, que tiene una conexión con `LISTEN ai_jobs` por el pooler en modo sesión, la recibe al instante (y revisa la cola cada minuto por si se perdió el aviso; se usa NOTIFY en lugar de Realtime porque el worker ya habla Postgres directamente) → reúne con SQL el contexto que permiten las fuentes activadas → ejecuta el proveedor → escribe la respuesta con sus fuentes → la PWA, que vuelve a pedir la página cada 2 s mientras espera, la muestra. Con `claude_cli`, Claude se lanza sin ninguna herramienta (`--tools ""`), sin MCP, sin ajustes del usuario y sin guardar la sesión: solo ve el texto que le pasa el worker y solo devuelve texto. Latencia esperada de varios segundos; aceptable para uso personal. Límites configurables de trabajos por día para no agotar la suscripción.
 
 ## 5. Decisiones que necesitan tu aprobación
 

@@ -21,14 +21,14 @@ export type Database = {
                   ]
                 },"ai_jobs": {
                   Row: {
-                    "created_at": string,"error": string | null,"finished_at": string | null,"id": string,"input": NonNullable<Json>,"kind": string,"output": Json | null,"provider": string | null,"started_at": string | null,"status": string,"user_id": string
+                    "created_at": string,"error": string | null,"finished_at": string | null,"id": string,"input": NonNullable<Json>,"kind": string,"model": string | null,"output": Json | null,"provider": string | null,"started_at": string | null,"status": string,"usage": Json | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"error"?: string | null,"finished_at"?: string | null,"id"?: string,"input": NonNullable<Json>,"kind": string,"output"?: Json | null,"provider"?: string | null,"started_at"?: string | null,"status"?: string,"user_id"?: string
+                    "created_at"?: string,"error"?: string | null,"finished_at"?: string | null,"id"?: string,"input": NonNullable<Json>,"kind": string,"model"?: string | null,"output"?: Json | null,"provider"?: string | null,"started_at"?: string | null,"status"?: string,"usage"?: Json | null,"user_id"?: string
                   }
                   Update: {
-                    "created_at"?: string,"error"?: string | null,"finished_at"?: string | null,"id"?: string,"input"?: NonNullable<Json>,"kind"?: string,"output"?: Json | null,"provider"?: string | null,"started_at"?: string | null,"status"?: string,"user_id"?: string
+                    "created_at"?: string,"error"?: string | null,"finished_at"?: string | null,"id"?: string,"input"?: NonNullable<Json>,"kind"?: string,"model"?: string | null,"output"?: Json | null,"provider"?: string | null,"started_at"?: string | null,"status"?: string,"usage"?: Json | null,"user_id"?: string
                   }
                   Relationships: [
                     

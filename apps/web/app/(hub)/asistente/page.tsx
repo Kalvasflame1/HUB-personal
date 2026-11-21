@@ -1,34 +1,40 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowUp, BookOpen, Cpu, Database, Search, Settings } from "lucide-react";
+import { ArrowUp, BookOpen, Cpu, Database, Loader2, Search, Settings, Sparkles } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
-import { Card, CardTitle, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
+import { Card, CardTitle, PageHeader, SkeletonGrid } from "@/components/ui";
 import { answer, SUGGESTIONS, type Answer } from "@/lib/quick-answers";
-import { loadSettings } from "@/lib/assistant-settings";
+import { loadSettings, MODELS } from "@/lib/assistant-settings";
+import { AutoRefresh } from "@/components/ai-answer";
+import { AiText, type AiSource } from "@/components/ai-text";
+import { askAi } from "./actions";
 
 export const metadata: Metadata = { title: "Asistente" };
 
 const SOURCES = [
   { icon: Database, title: "Datos del Hub", text: "Tareas, entrenamientos, forma y eventos guardados en Supabase. Cada cifra sale de una consulta, no de una IA." },
   { icon: BookOpen, title: "Craft", text: "Búsqueda en el índice, Seguimiento activo e Informe Diario." },
-  { icon: Cpu, title: "IA en el Mac mini", text: "Más adelante: preguntas libres con tu suscripción de Claude y tope diario. Lo de aquí seguirá funcionando sin ella." },
+  { icon: Cpu, title: "Claude en el Mac mini", text: "Lo que las consultas no saben responder se lo pregunta a Claude con tu suscripción, con tope diario. Solo recibe lo que el worker le pasa y no puede cambiar nada." },
 ];
 
 export default function AsistentePage({ searchParams }: PageProps<"/asistente">) {
-  const question = searchParams.then((p) => (typeof p.q === "string" ? p.q.trim().slice(0, 300) : ""));
+  const params = searchParams.then((p) => ({
+    q: typeof p.q === "string" ? p.q.trim().slice(0, 300) : "",
+    job: typeof p.job === "string" && /^[0-9a-f-]{36}$/.test(p.job) ? p.job : "",
+    failed: p.ia === "error",
+  }));
   return (
     <>
-      <PageHeader title="Asistente" subtitle="Preguntas rápidas sobre tus datos, respondidas con consultas y sin IA.">
+      <PageHeader title="Asistente" subtitle="Preguntas sobre tus datos: las rápidas con consultas y el resto con Claude.">
         <div className="flex items-center gap-3">
-          <Pill>Sin IA</Pill>
           <Link href="/asistente/configuracion" className="press flex items-center gap-1 text-[14px] font-medium text-accent">
             <Settings size={16} aria-hidden /> Configuración
           </Link>
         </div>
       </PageHeader>
       <Suspense fallback={<SkeletonGrid blocks={2} />}>
-        <Content question={question} />
+        <Content params={params} />
       </Suspense>
     </>
   );
@@ -68,10 +74,72 @@ function AnswerCard({ a }: { a: Answer }) {
   );
 }
 
-async function Content({ question }: { question: Promise<string> }) {
-  const q = await question;
+function AskButton({ q, primary }: { q: string; primary?: boolean }) {
+  return (
+    <form action={askAi}>
+      <input type="hidden" name="q" value={q} />
+      <button type="submit" className={primary
+        ? "press inline-flex h-10 items-center gap-1.5 rounded-xl bg-accent px-4 text-[14px] font-semibold text-white"
+        : "press inline-flex items-center gap-1.5 text-[14px] font-medium text-accent"}>
+        <Sparkles size={15} aria-hidden /> Preguntar a Claude
+      </button>
+    </form>
+  );
+}
+
+type Job = { status: string; output: unknown; error: string | null; model: string | null; usage: unknown };
+
+function AiCard({ job, q }: { job: Job | null; q: string }) {
+  if (!job) return <div className="rounded-2xl border border-line p-4 text-[14px] text-ink-2">No encuentro esa pregunta. Vuelve a enviarla.</div>;
+  const pending = job.status === "queued" || job.status === "running";
+  const out = (job.output ?? {}) as { answer?: string; sources?: AiSource[] };
+  const usage = (job.usage ?? {}) as { duration_ms?: number };
+  const model = MODELS.find((m) => m.value === job.model)?.label ?? job.model;
+  return (
+    <div className="rounded-2xl border border-line p-4" aria-live="polite">
+      <AutoRefresh active={pending} />
+      <p className="mb-2 flex items-center gap-1.5 text-[13px] font-medium text-ink-3"><Sparkles size={14} className="text-accent" aria-hidden /> Claude</p>
+      {pending ? (
+        <p className="flex items-center gap-2 text-[15px] text-ink-2">
+          <Loader2 size={16} className="animate-spin text-accent" aria-hidden />
+          {job.status === "queued" ? "Enviada al Mac mini…" : "Reuniendo tus datos y pensando…"}
+        </p>
+      ) : job.status === "done" && out.answer ? (
+        <>
+          <AiText text={out.answer} sources={out.sources ?? []} />
+          {out.sources?.length ? (
+            <ul className="mt-3 flex flex-col gap-1 border-t border-line pt-3">
+              {out.sources.map((s) => (
+                <li key={s.n} className="flex gap-2 text-[13px]">
+                  <span className="tnum w-4 shrink-0 text-right font-semibold text-accent">{s.n}</span>
+                  {s.href ? <a href={s.href} className="min-w-0 truncate text-ink-2 hover:text-accent">{s.label}</a> : <span className="min-w-0 truncate text-ink-2">{s.label}</span>}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <p className="mt-3 text-[12px] text-ink-3">
+            {[model, usage.duration_ms ? `${(usage.duration_ms / 1000).toFixed(1).replace(".", ",")} s` : null, "solo lectura: Claude no ha cambiado nada"].filter(Boolean).join(" · ")}
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="text-[15px] text-ink-2">{job.error ?? "No se pudo responder."}</p>
+          <div className="mt-3"><AskButton q={q} /></div>
+        </>
+      )}
+    </div>
+  );
+}
+
+async function Content({ params }: { params: Promise<{ q: string; job: string; failed: boolean }> }) {
+  const { q, job: jobId, failed } = await params;
   const { supabase } = await getSession();
-  const [result, settings] = await Promise.all([q ? answer(supabase, q) : null, loadSettings(supabase)]);
+  const [result, settings, jobRes] = await Promise.all([
+    q && !jobId ? answer(supabase, q) : null,
+    loadSettings(supabase),
+    jobId ? supabase.from("ai_jobs").select("status,output,error,model,usage").eq("id", jobId).maybeSingle() : null,
+  ]);
+  const job = (jobRes?.data ?? null) as Job | null;
 
   return (
     <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
@@ -87,15 +155,23 @@ async function Content({ question }: { question: Promise<string> }) {
 
         {q ? (
           <div className="mt-4">
-            {result ? (
-              <AnswerCard a={result} />
+            {jobId ? (
+              <AiCard job={job} q={q} />
+            ) : result ? (
+              <>
+                <AnswerCard a={result} />
+                <div className="mt-2 flex justify-end"><AskButton q={q} /></div>
+              </>
             ) : (
               <div className="rounded-2xl border border-line p-4">
-                <p className="text-[15px] font-medium">Esa todavía no la sé responder sin IA.</p>
-                <p className="mt-1 text-[14px] text-ink-2">Prueba con una de las preguntas de abajo, o búscala en Craft.</p>
-                <Link href={`/conocimiento?q=${encodeURIComponent(q)}`} className="press mt-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent">
-                  <Search size={15} aria-hidden /> Buscar «{q}» en Craft
-                </Link>
+                <p className="text-[15px] font-medium">Esta no la sé responder con una consulta.</p>
+                <p className="mt-1 text-[14px] text-ink-2">{failed ? "No se pudo enviar la pregunta a Claude. Inténtalo de nuevo." : "Se la puedo preguntar a Claude con tus datos, o puedes buscarla en Craft."}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-4">
+                  <AskButton q={q} primary />
+                  <Link href={`/conocimiento?q=${encodeURIComponent(q)}`} className="press inline-flex items-center gap-1.5 text-[14px] font-medium text-accent">
+                    <Search size={15} aria-hidden /> Buscar en Craft
+                  </Link>
+                </div>
               </div>
             )}
           </div>

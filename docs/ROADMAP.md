@@ -123,9 +123,9 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
   - El contexto personal se lee de «🧠 Memoria e Información Importante» de Craft, ya indexada; no se duplica.
   - Las instrucciones no pueden cambiar los permisos (herramientas de solo lectura fijadas por el worker), ni el origen de las cifras (SQL), ni las reglas del proyecto.
 - [x] F5-2 Asistente sin IA (21-11-2026): pantalla Asistente con campo de pregunta y diez preguntas sugeridas, reconocidas por palabras clave (`lib/quick-answers.ts`) y respondidas con consultas: km del mes (frente al mismo día del mes anterior) y de la semana, evolución del ritmo por meses, forma y preparación, último entrenamiento, marcas, tareas pendientes, asuntos en seguimiento, eventos de 7 días y «busca …» en Craft. Cada respuesta indica su fuente. Lo que no reconoce ofrece buscarlo en Craft.
-- [ ] F5-3 Instalar la CLI de Claude Code en el Mac mini y proveedor `claude_cli`
-- [ ] F5-4 Cola `ai_jobs` con Realtime, tope diario y medición de consumo
-- [ ] F5-5 Herramientas de solo lectura del asistente sobre Supabase
+- [x] F5-3 Instalar la CLI de Claude Code en el Mac mini y proveedor `claude_cli` (21-11-2026: CLI ya instalada con la sesión del plan Pro y sin `ANTHROPIC_API_KEY`; `src/ai/claude.ts` la lanza sin herramientas, sin MCP y sin ajustes del usuario; probado desde terminal y desde launchd)
+- [x] F5-4 Cola `ai_jobs` con aviso inmediato, tope diario y medición de consumo (21-11-2026: la web solo inserta preguntas y lee; `pg_notify` + `LISTEN` en el worker en lugar de Realtime, con revisión cada minuto; tope diario de la configuración; tokens, modelo y duración en `usage`. Botón «Preguntar a Claude» en el Asistente, con respuesta y fuentes citadas; primera prueba desde la app: 5,7 s con Haiku)
+- [x] F5-5 Herramientas de solo lectura del asistente sobre Supabase (21-11-2026, resuelto sin dar herramientas a Claude: el worker reúne con SQL tareas, seguimiento, eventos, running, forma, informes, lecturas web, documentos de Craft que coinciden con la pregunta y la Memoria, según las fuentes activadas, en bloques numerados que la respuesta cita)
 - [ ] F5-6 Consulta de Craft en vivo desde el asistente (nivel C), con citas
 - [ ] F5-7 Redacción con IA de los informes semanal y mensual
 - [ ] F5-8 Resúmenes de fuentes web

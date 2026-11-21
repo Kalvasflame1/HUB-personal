@@ -19,6 +19,7 @@ import { indexCraft } from "./craft/index.ts";
 import { cleanup } from "./cleanup.ts";
 import { applyTrackingChanges, pendingTrackingChanges, readCraftExtras } from "./craft/extras.ts";
 import { podcast } from "./podcast.ts";
+import { drainAiQueue, listenAiJobs } from "./ai/queue.ts";
 
 const TZ = "Europe/Madrid";
 
@@ -141,6 +142,9 @@ let busy = false;
 let stopping = false;
 
 async function tick() {
+  // Preguntas al asistente: van aparte para no esperar a una tarea larga (p. ej. el podcast).
+  // Normalmente las despierta el aviso de Postgres; esto es la red por si se perdió.
+  void drainAiQueue();
   if (busy) return;
   busy = true;
   try {
@@ -181,6 +185,8 @@ if (runOne) {
   await tick();
 } else {
   log(`Worker iniciado (pid ${process.pid}). Tareas: ${JOBS.map((j) => j.name).join(", ")}`);
+  log(`Asistente: proveedor ${process.env.AI_PROVIDER?.trim() || "none"}`);
+  await listenAiJobs(() => stopping);
   const timer = setInterval(tick, 60_000);
   void tick();
   const shutdown = (signal: string) => {

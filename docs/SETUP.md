@@ -175,11 +175,13 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 
 Antes de nada: **verificar en el centro de ayuda de Anthropic cómo se factura hoy `claude -p` con tu plan** (riesgo R1).
 
-1. 👤 Instalar la CLI de Claude Code en el Mac mini e iniciar sesión con tu suscripción.
-2. 🤖 Comprobar que **no** existe `ANTHROPIC_API_KEY` en el entorno del worker (si existe, el uso se factura a la API).
-3. 🤖 Configurar el worker con `AI_PROVIDER=claude_cli`, herramientas de solo lectura y `--output-format json`.
-4. 🤖 Declarar el MCP de Craft de forma explícita en la configuración del worker.
-5. 🤖 Prueba con las seis preguntas de ejemplo del briefing y medición del consumo.
+1. 👤 Instalar la CLI de Claude Code en el Mac mini e iniciar sesión con tu suscripción. Hecho: `~/.local/bin/claude` (2.1.330), sesión `claude.ai` del plan Pro (`claude auth status`; caduca el 20-12-2026 y se renueva al usar Claude Code).
+2. 🤖 Comprobar que **no** existe `ANTHROPIC_API_KEY` en el entorno del worker (si existe, el uso se factura a la API). Comprobado el 21-11-2026; además el proveedor la quita del entorno al lanzar `claude`.
+3. 🤖 `AI_PROVIDER=claude_cli` en `apps/worker/.env` (activado el 21-11-2026). El proveedor (`apps/worker/src/ai/claude.ts`) lanza `claude -p --output-format json --no-session-persistence --tools "" --strict-mcp-config --setting-sources ""` en `~/Library/Application Support/PersonalHub/ai`. No usa `--bare`, que se salta el Llavero donde está la sesión. Probado también desde launchd.
+4. 🤖 Contexto reunido por el worker con SQL (`src/ai/context.ts`) según las fuentes de Asistente → Configuración; el modelo es el de «preguntas» y el tope diario el de esa pantalla.
+5. 🤖 Probar sin la web: `npm run ai:ask --workspace apps/worker -- "pregunta"` (la responde como el worker) o con `--context` (solo muestra lo que se enviaría, sin llamar a Claude).
+6. 🤖 Pendiente: prueba con las seis preguntas de ejemplo del briefing y medición del consumo.
+7. Para apagar la IA: `AI_PROVIDER=none` y reiniciar el worker. Las preguntas a Claude se cierran con un aviso; las preguntas rápidas siguen funcionando.
 
 ## 10. Copias de seguridad y restauración
 

@@ -44,7 +44,7 @@ async function Content({ saved }: { saved: Promise<boolean> }) {
   const [s, historyRes, usageRes] = await Promise.all([
     loadSettings(supabase),
     supabase.from("assistant_settings").select("version,note,created_at,style,model_quick,model_reports,daily_cap").order("version", { ascending: false }).limit(20),
-    supabase.from("ai_jobs").select("id", { count: "exact", head: true }).gte("created_at", madridMidnight()),
+    supabase.from("ai_jobs").select("id", { count: "exact", head: true }).eq("provider", "claude_cli").gte("started_at", madridMidnight()),
   ]);
   const history = historyRes.data ?? [];
   const used = usageRes.count ?? 0;
@@ -130,14 +130,14 @@ async function Content({ saved }: { saved: Promise<boolean> }) {
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2" role="img" aria-label={`${used} de ${s.daily_cap} trabajos hoy`}>
             <div className="h-full rounded-full bg-accent" style={{ width: `${s.daily_cap ? Math.min(100, (used / s.daily_cap) * 100) : 0}%` }} />
           </div>
-          <p className="mt-2 text-[12px] text-ink-3">Trabajos de IA lanzados hoy. Las preguntas rápidas sin IA no cuentan. La IA aún no está activa (F5-3).</p>
+          <p className="mt-2 text-[12px] text-ink-3">Preguntas respondidas hoy por Claude (desde las 00:00). Las preguntas rápidas con consultas no cuentan. Al llegar al tope, Claude deja de responder hasta mañana.</p>
         </Card>
 
         <Card>
           <CardTitle>Lo que no se puede cambiar</CardTitle>
           <ul className="flex flex-col gap-2 text-[13px] leading-relaxed text-ink-2">
             {[
-              "Los permisos: el asistente solo lee, con herramientas que fija el worker.",
+              "Los permisos: Claude no tiene herramientas; solo recibe los datos que reúne el worker y no puede cambiar nada.",
               "El origen de las cifras: siempre salen de consultas, no de la IA.",
               "Las reglas del proyecto (Craft de solo lectura salvo la tabla Seguimiento, secretos fuera de la web…).",
             ].map((t) => (
