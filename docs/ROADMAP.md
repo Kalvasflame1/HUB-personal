@@ -120,7 +120,7 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
   - Se configura: instrucciones generales en texto libre, estilo de respuesta, fuentes activables (tareas, running, informes, web, Craft; posibilidad de excluir PERSONAL), modelo para preguntas sencillas y para informes, tope diario con contador de uso, y atajos de preguntas frecuentes.
   - El contexto personal se lee de «🧠 Memoria e Información Importante» de Craft, ya indexada; no se duplica.
   - Las instrucciones no pueden cambiar los permisos (herramientas de solo lectura fijadas por el worker), ni el origen de las cifras (SQL), ni las reglas del proyecto.
-- [ ] F5-2 Asistente sin IA: consultas predefinidas resueltas con SQL (km del mes, evolución del ritmo, tareas pendientes)
+- [x] F5-2 Asistente sin IA (21-11-2026): pantalla Asistente con campo de pregunta y diez preguntas sugeridas, reconocidas por palabras clave (`lib/quick-answers.ts`) y respondidas con consultas: km del mes (frente al mismo día del mes anterior) y de la semana, evolución del ritmo por meses, forma y preparación, último entrenamiento, marcas, tareas pendientes, asuntos en seguimiento, eventos de 7 días y «busca …» en Craft. Cada respuesta indica su fuente. Lo que no reconoce ofrece buscarlo en Craft.
 - [ ] F5-3 Instalar la CLI de Claude Code en el Mac mini y proveedor `claude_cli`
 - [ ] F5-4 Cola `ai_jobs` con Realtime, tope diario y medición de consumo
 - [ ] F5-5 Herramientas de solo lectura del asistente sobre Supabase
