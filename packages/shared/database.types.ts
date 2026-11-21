@@ -249,14 +249,14 @@ isOneToOne: false
                   ]
                 },"reports": {
                   Row: {
-                    "body_md": string | null,"craft_url": string | null,"created_at": string,"generated_by": string,"id": string,"is_demo": boolean,"kind": string,"metrics": NonNullable<Json>,"period_end": string,"period_start": string,"title": string,"user_id": string
+                    "ai_generated_at": string | null,"ai_model": string | null,"ai_summary": string | null,"body_md": string | null,"craft_url": string | null,"created_at": string,"generated_by": string,"id": string,"is_demo": boolean,"kind": string,"metrics": NonNullable<Json>,"period_end": string,"period_start": string,"title": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body_md"?: string | null,"craft_url"?: string | null,"created_at"?: string,"generated_by"?: string,"id"?: string,"is_demo"?: boolean,"kind": string,"metrics"?: NonNullable<Json>,"period_end": string,"period_start": string,"title": string,"user_id": string
+                    "ai_generated_at"?: string | null,"ai_model"?: string | null,"ai_summary"?: string | null,"body_md"?: string | null,"craft_url"?: string | null,"created_at"?: string,"generated_by"?: string,"id"?: string,"is_demo"?: boolean,"kind": string,"metrics"?: NonNullable<Json>,"period_end": string,"period_start": string,"title": string,"user_id": string
                   }
                   Update: {
-                    "body_md"?: string | null,"craft_url"?: string | null,"created_at"?: string,"generated_by"?: string,"id"?: string,"is_demo"?: boolean,"kind"?: string,"metrics"?: NonNullable<Json>,"period_end"?: string,"period_start"?: string,"title"?: string,"user_id"?: string
+                    "ai_generated_at"?: string | null,"ai_model"?: string | null,"ai_summary"?: string | null,"body_md"?: string | null,"craft_url"?: string | null,"created_at"?: string,"generated_by"?: string,"id"?: string,"is_demo"?: boolean,"kind"?: string,"metrics"?: NonNullable<Json>,"period_end"?: string,"period_start"?: string,"title"?: string,"user_id"?: string
                   }
                   Relationships: [
                     

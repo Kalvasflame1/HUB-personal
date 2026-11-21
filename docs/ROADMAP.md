@@ -127,12 +127,19 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 - [x] F5-4 Cola `ai_jobs` con aviso inmediato, tope diario y medición de consumo (21-11-2026: la web solo inserta preguntas y lee; `pg_notify` + `LISTEN` en el worker en lugar de Realtime, con revisión cada minuto; tope diario de la configuración; tokens, modelo y duración en `usage`. Botón «Preguntar a Claude» en el Asistente, con respuesta y fuentes citadas; primera prueba desde la app: 5,7 s con Haiku)
 - [x] F5-5 Herramientas de solo lectura del asistente sobre Supabase (21-11-2026, resuelto sin dar herramientas a Claude: el worker reúne con SQL tareas, seguimiento, eventos, running, forma, informes, lecturas web, documentos de Craft que coinciden con la pregunta y la Memoria, según las fuentes activadas, en bloques numerados que la respuesta cita)
 - [ ] F5-6 Consulta de Craft en vivo desde el asistente (nivel C), con citas
-- [ ] F5-7 Redacción con IA de los informes semanal y mensual
+- [x] F5-7 Redacción con IA de los informes semanal y mensual (21-11-2026: comentario de Claude con el modelo «para informes» de la configuración, en `reports.ai_summary`, sobre las cifras de la plantilla, que se siguen guardando igual; cuenta para el tope diario y queda en `ai_jobs` con `kind = 'report'`. Sin IA, con el tope alcanzado o si Claude falla, el informe sale sin comentario. En Informes, el último semanal y el último mensual van arriba con su comentario y las cifras debajo. Probado con la semana del 9-11 (Sonnet, 8,5 s) y octubre (9,8 s))
 - [ ] F5-8 Resúmenes de fuentes web
 - [ ] F5-9 Decisión D4: unificar o no con el «Resumen diario» actual
 - [ ] F5-10 Opcional: MCP de Supabase para que Cowork consulte los datos del Hub
 
 **Hecho cuando:** las seis preguntas de ejemplo del briefing reciben respuesta correcta con fuentes, el consumo queda dentro del tope acordado, y con `AI_PROVIDER=none` todo lo demás sigue funcionando.
+
+**Prueba del 21-11-2026 (criterio cumplido; quedan F5-6 a F5-10):**
+- Con consultas (sin IA): «¿Cuántos kilómetros he corrido este mes?», «¿Cómo ha evolucionado mi ritmo?» y «¿Qué tareas tengo pendientes?», cada una con su fuente.
+- Con Claude (Haiku): «Prepara mi resumen semanal» (26 s, ~5.500 tokens de salida; tareas, running por semanas, finanzas, asuntos y la semana próxima), «Busca en mi documentación de Craft la información relacionada con el Koleos» (9 s, cita la ficha del coche y la Memoria) y «Relaciona mis tareas actuales con documentación que ya tengo almacenada» (9 s; bloque de coincidencias por título con al menos dos palabras en común, y Claude descarta los falsos positivos). Todas con fuentes.
+- Reparto: lo que pide redactar, relacionar o razonar («prepara», «resume», «relaciona», «me conviene»…) ya no lo atrapa una consulta, va a Claude.
+- Consumo del día: 5 preguntas a Claude de un tope de 20; 11,8 s de media.
+- Con `AI_PROVIDER=none`: la pregunta se cierra con «La IA está desactivada en el Mac mini…» y las preguntas rápidas siguen funcionando.
 
 ## Fase 6 · Ampliaciones
 

@@ -132,6 +132,7 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
    npm start --workspace apps/worker -- --once          # ejecuta lo que toque y termina
    npm start --workspace apps/worker -- --run=web_fetch # una tarea concreta
    npm run report --workspace apps/worker -- weekly --date=2026-11-10
+   npm run report --workspace apps/worker -- weekly --no-ai   # sin comentario de Claude (conserva el que hubiera)
    ```
 3. 👤 Autorizar e instalar el agente de `launchd` (arranca al iniciar sesión y se reinicia si se cae):
    ```bash
@@ -180,7 +181,7 @@ Antes de nada: **verificar en el centro de ayuda de Anthropic cómo se factura h
 3. 🤖 `AI_PROVIDER=claude_cli` en `apps/worker/.env` (activado el 21-11-2026). El proveedor (`apps/worker/src/ai/claude.ts`) lanza `claude -p --output-format json --no-session-persistence --tools "" --strict-mcp-config --setting-sources ""` en `~/Library/Application Support/PersonalHub/ai`. No usa `--bare`, que se salta el Llavero donde está la sesión. Probado también desde launchd.
 4. 🤖 Contexto reunido por el worker con SQL (`src/ai/context.ts`) según las fuentes de Asistente → Configuración; el modelo es el de «preguntas» y el tope diario el de esa pantalla.
 5. 🤖 Probar sin la web: `npm run ai:ask --workspace apps/worker -- "pregunta"` (la responde como el worker) o con `--context` (solo muestra lo que se enviaría, sin llamar a Claude).
-6. 🤖 Pendiente: prueba con las seis preguntas de ejemplo del briefing y medición del consumo.
+6. 🤖 Prueba con las seis preguntas de ejemplo del briefing y medición del consumo: hecha el 21-11-2026 (resultado en ROADMAP, Fase 5).
 7. Para apagar la IA: `AI_PROVIDER=none` y reiniciar el worker. Las preguntas a Claude se cierran con un aviso; las preguntas rápidas siguen funcionando.
 
 ## 10. Copias de seguridad y restauración

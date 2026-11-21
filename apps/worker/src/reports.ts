@@ -1,13 +1,16 @@
 /**
- * Informes diario, semanal y mensual con plantilla (sin IA). Todas las cifras salen de SQL.
+ * Informes diario, semanal y mensual con plantilla. Todas las cifras salen de SQL.
+ * Semanal y mensual llevan además un comentario redactado por Claude si AI_PROVIDER=claude_cli
+ * (F5-7); sin IA, o si falla, el informe se guarda igual, sin comentario.
  * Se guardan en public.reports; si se vuelven a generar para el mismo periodo, se actualizan.
  *
- *   npm run report --workspace apps/worker -- daily|weekly|monthly [--date=YYYY-MM-DD]
+ *   npm run report --workspace apps/worker -- daily|weekly|monthly [--date=YYYY-MM-DD] [--no-ai]
  *   (--date es un día cualquiera dentro del periodo; por defecto, el periodo cerrado más reciente)
  */
 import type pg from "pg";
 import { USER_ID } from "./db.ts";
 import { runJob, type JobResult } from "./jobs.ts";
+import { writeReportSummary } from "./ai/report-writer.ts";
 
 export type Kind = "daily" | "weekly" | "monthly";
 
@@ -154,7 +157,7 @@ function compose(kind: Kind, p: { start: string; end: string }, m: Awaited<Retur
   return { title, body: [lead, "", ...bullets.map((b) => `- ${b}`)].join("\n") };
 }
 
-export async function generateReport(db: pg.Client, kind: Kind, day?: string): Promise<JobResult> {
+export async function generateReport(db: pg.Client, kind: Kind, day?: string, opts: { ai?: boolean } = {}): Promise<JobResult> {
   const uid = USER_ID();
   const p = period(kind, day);
   const prevP = previous(kind, p);
@@ -164,14 +167,26 @@ export async function generateReport(db: pg.Client, kind: Kind, day?: string): P
   const now = await pendingNow(db, uid);
   const { title, body } = compose(kind, p, m, prev, now);
 
+  // Comentario de Claude (solo semanal y mensual). Al volver a generar sin IA se conserva el anterior.
+  let ai: { summary: string; model: string } | null = null;
+  let aiNote = "";
+  if (kind !== "daily" && opts.ai !== false) {
+    const r = await writeReportSummary(db, uid, { kind, start: p.start, end: p.end, title, body });
+    if ("summary" in r) ai = r;
+    else aiNote = r.skipped;
+  }
+
   const { rows } = await db.query<{ inserted: boolean }>(
-    `insert into public.reports (user_id, kind, period_start, period_end, title, metrics, body_md, generated_by)
-     values ($1, $2, $3, $4, $5, $6, $7, 'template')
+    `insert into public.reports (user_id, kind, period_start, period_end, title, metrics, body_md, generated_by, ai_summary, ai_model, ai_generated_at)
+     values ($1, $2, $3, $4, $5, $6, $7, 'template', $8, $9, case when $8::text is null then null else now() end)
      on conflict (user_id, kind, period_start) do update set
        period_end = excluded.period_end, title = excluded.title, metrics = excluded.metrics,
-       body_md = excluded.body_md, generated_by = excluded.generated_by, is_demo = false
+       body_md = excluded.body_md, generated_by = excluded.generated_by, is_demo = false,
+       ai_summary = coalesce(excluded.ai_summary, reports.ai_summary),
+       ai_model = coalesce(excluded.ai_model, reports.ai_model),
+       ai_generated_at = coalesce(excluded.ai_generated_at, reports.ai_generated_at)
      returning (xmax = 0) as inserted`,
-    [uid, kind, p.start, p.end, title, JSON.stringify({ ...m, previous: { km: prev.km, runs: prev.runs }, ...now }), body],
+    [uid, kind, p.start, p.end, title, JSON.stringify({ ...m, previous: { km: prev.km, runs: prev.runs }, ...now }), body, ai?.summary ?? null, ai?.model ?? null],
   );
   if (rows[0]?.inserted) {
     await db.query(
@@ -179,7 +194,8 @@ export async function generateReport(db: pg.Client, kind: Kind, day?: string): P
       [uid, `${title} disponible`],
     );
   }
-  return { items: 1, details: { kind, ...p }, message: `${title} (${p.start} – ${p.end})` };
+  const aiText = kind === "daily" ? "" : ai ? ` · comentario de Claude (${ai.model})` : ` · sin comentario: ${aiNote}`;
+  return { items: 1, details: { kind, ...p, ai: ai ? ai.model : aiNote || null }, message: `${title} (${p.start} – ${p.end})${aiText}` };
 }
 
 if (import.meta.main) {
@@ -189,6 +205,7 @@ if (import.meta.main) {
     process.exit(1);
   }
   const day = process.argv.find((a) => a.startsWith("--date="))?.split("=")[1];
-  const r = await runJob(`report_${kind}`, (db) => generateReport(db, kind, day));
+  const noAi = process.argv.includes("--no-ai");
+  const r = await runJob(`report_${kind}`, (db) => generateReport(db, kind, day, { ai: !noAi }));
   if (!r.ok) process.exitCode = 1;
 }

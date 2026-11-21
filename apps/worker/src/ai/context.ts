@@ -13,6 +13,7 @@ export type Settings = {
   style: string;
   sources: Record<string, boolean>;
   model_quick: string;
+  model_reports: string;
   daily_cap: number;
 };
 
@@ -21,6 +22,7 @@ const DEFAULTS: Settings = {
   style: "normal",
   sources: { tasks: true, running: true, reports: true, web: true, craft: true, craft_personal: true },
   model_quick: "haiku",
+  model_reports: "sonnet",
   daily_cap: 20,
 };
 
@@ -29,7 +31,7 @@ const TZ = "Europe/Madrid";
 
 export async function loadSettings(db: pg.Client, uid: string): Promise<Settings> {
   const { rows } = await db.query(
-    "select instructions, style, sources, model_quick, daily_cap from public.assistant_settings where user_id = $1 order by version desc limit 1",
+    "select instructions, style, sources, model_quick, model_reports, daily_cap from public.assistant_settings where user_id = $1 order by version desc limit 1",
     [uid],
   );
   if (!rows[0]) return DEFAULTS;
@@ -53,6 +55,9 @@ const clip = (s: string | null | undefined, n: number) => {
   return t.length > n ? `${t.slice(0, n)}…` : t;
 };
 
+/** Palabras demasiado comunes para relacionar un asunto con un documento. */
+const GENERIC = new Set(["palencia", "revisar", "compra", "nov", "dic", "ene", "antes", "fin", "mes", "día", "dia", "días", "nuevo", "nueva", "título", "sin", "plan", "cita", "app"]);
+
 /** Palabras con contenido de la pregunta, para buscar en Craft. */
 function terms(question: string) {
   const stop = new Set(["que", "con", "los", "las", "del", "una", "uno", "unos", "hay", "mis", "por", "más", "mas", "muy", "son", "fue", "ser", "eso", "esa", "ese", "hoy", "ayer", "como", "cómo", "cuando", "cuándo", "donde", "dónde", "tengo", "tiene", "para", "sobre", "esta", "este", "estos", "estas", "que", "qué", "cual", "cuál", "cuanto", "cuánto", "cuantos", "cuántos", "hacer", "puedo", "debo", "dime", "algo", "entre", "desde", "hasta", "mucho", "poco", "mejor", "peor"]);
@@ -70,6 +75,9 @@ export async function buildContext(db: pg.Client, uid: string, question: string,
   };
   const on = settings.sources;
   const today = new Date().toLocaleDateString("sv-SE", { timeZone: TZ });
+  const nq = question.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const wantsWeek = /resumen|semana|semanal|balance|repaso/.test(nq);
+  const wantsLinks = /relacion|vincul|conecta|document/.test(nq) && /tarea|seguimiento|asunto|pendiente/.test(nq);
 
   if (on.tasks) {
     const tasks = await db.query(
@@ -79,6 +87,13 @@ export async function buildContext(db: pg.Client, uid: string, question: string,
         order by t.due_date nulls last, t.priority desc limit 40`, [uid]);
     add("Tareas pendientes del Hub", tasks.rows.map((r) =>
       `- ${r.title}${r.status === "doing" ? " (en curso)" : ""}${r.due ? ` · vence ${r.due}` : ""}${r.project ? ` · proyecto ${r.project}` : ""}${r.notes ? ` · ${clip(r.notes, 200)}` : ""}`).join("\n") || "No hay tareas pendientes.", "/productividad");
+
+    if (wantsWeek) {
+      const done = await db.query(
+        `select title, completed_at::date::text d from public.tasks
+          where user_id = $1 and not is_demo and status = 'done' and completed_at >= now() - interval '14 days' order by completed_at desc limit 30`, [uid]);
+      add("Tareas completadas en los últimos 14 días", done.rows.map((r) => `- ${r.d}: ${r.title}`).join("\n") || "Ninguna.", "/productividad");
+    }
 
     const tracking = await db.query(
       `select title, status, category, due_date::text due, left(notes, 300) notes from public.craft_tracking
@@ -99,6 +114,15 @@ export async function buildContext(db: pg.Client, uid: string, question: string,
          from public.strava_activities where user_id = $1 and not is_demo order by start_date desc limit 12`, [uid]);
     add("Últimas actividades de Strava", recent.rows.map((r) =>
       `- ${r.d.slice(0, 16)} · ${r.sport_type} · ${r.name} · ${km(+r.distance_m)} km · ${hms(r.moving_time_s)} · ${pace(+r.average_speed_ms)}${r.average_heartrate ? ` · FC ${Math.round(r.average_heartrate)}` : ""}${r.suffer_score != null ? ` · esfuerzo ${r.suffer_score}` : ""}`).join("\n"), "/running");
+
+    if (wantsWeek) {
+      const weeks = await db.query(
+        `select to_char(date_trunc('week', start_date_local), 'YYYY-MM-DD') w, count(*) n, sum(distance_m) dist, sum(moving_time_s) t
+           from public.strava_activities where user_id = $1 and not is_demo and sport_type in ('Run','TrailRun','VirtualRun')
+            and start_date_local >= date_trunc('week', now()) - interval '3 weeks' group by 1 order by 1`, [uid]);
+      add("Carrera por semanas (lunes de cada semana, últimas 4)", weeks.rows.map((r) =>
+        `- semana del ${r.w}: ${r.n} salidas · ${km(+r.dist)} km · ritmo medio ${pace(+r.dist / +r.t)}`).join("\n") || "Sin carreras.", "/running");
+    }
 
     const months = await db.query(
       `select to_char(date_trunc('month', start_date_local), 'YYYY-MM') m, count(*) n, sum(distance_m) dist, sum(moving_time_s) t
@@ -132,7 +156,8 @@ export async function buildContext(db: pg.Client, uid: string, question: string,
 
   if (on.reports) {
     const rep = await db.query(
-      "select title, kind, period_start::text d, body_md from public.reports where user_id = $1 and not is_demo order by created_at desc limit 3", [uid]);
+      `select distinct on (kind) title, kind, period_start::text d, body_md from public.reports
+          where user_id = $1 and not is_demo order by kind, period_start desc`, [uid]);
     for (const r of rep.rows) add(`Informe del Hub: ${r.title}`, clip(r.body_md, 1500), "/informes");
   }
 
@@ -143,8 +168,38 @@ export async function buildContext(db: pg.Client, uid: string, question: string,
     add("Lecturas web recientes o guardadas", web.rows.map((r) => `- ${r.title}${r.s ? `: ${clip(r.s, 200)}` : ""}`).join("\n"), "/web");
   }
 
+  if (on.craft && wantsLinks) {
+    // Para cada tarea y asunto activo, los dos documentos de Craft que mejor coinciden con su título
+    // (fuera noticias, resúmenes diarios, la Memoria y el propio «Seguimiento activo»).
+    const items = await db.query<{ title: string; kind: string }>(
+      `(select title, 'Tarea' kind from public.tasks where user_id = $1 and not is_demo and status in ('todo','doing') limit 15)
+       union all
+       (select title, 'Seguimiento' kind from public.craft_tracking where user_id = $1 and status_key in ('open','in_progress','watching') order by due_date nulls last limit 30)`, [uid]);
+    const lines: string[] = [];
+    for (const it of items.rows) {
+      const w = terms(it.title).filter((x) => !/^\d+$/.test(x) && !GENERIC.has(x));
+      if (!w.length) continue;
+      // Al menos dos palabras del título en el documento (o la única que haya), para evitar
+      // coincidencias por una palabra suelta.
+      const docs = await db.query(
+        `select title, folder_path from (
+           select title, folder_path, fts,
+                  (select count(*) from unnest($5::text[]) x where fts @@ plainto_tsquery('spanish', x)) hits
+             from public.kb_documents
+            where user_id = $1 and deleted_at is null and fts @@ to_tsquery('spanish', $2) and external_id <> $3
+              and coalesce(folder_path, '') not like 'NOTICIAS%' and coalesce(folder_path, '') not like 'Histórico Resúmenes%'
+              and coalesce(folder_path, '') not like 'Notas diarias%' and title not like '%Seguimiento activo%'
+              and ($4 or coalesce(folder_path, '') not like 'PERSONAL%')) d
+          where hits >= least(2, $6::int)
+          order by hits desc, ts_rank(fts, to_tsquery('spanish', $2)) desc limit 2`,
+        [uid, w.map((x) => x.replace(/'/g, "")).join(" | "), MEMORY_ID, !!on.craft_personal, w, w.length]);
+      lines.push(`- ${it.kind}: ${it.title} → ${docs.rows.length ? docs.rows.map((d) => `«${d.title}»${d.folder_path ? ` (${d.folder_path})` : ""}`).join("; ") : "sin documento que coincida"}`);
+    }
+    add("Coincidencias entre tareas/seguimiento y documentos de Craft (por palabras del título; puede haber falsos positivos)", lines.join("\n"), "/conocimiento");
+  }
+
   if (on.craft) {
-    const words = terms(question);
+    const words = wantsLinks ? [] : terms(question);
     if (words.length) {
       const docs = await db.query(
         `select title, folder_path, source_url,

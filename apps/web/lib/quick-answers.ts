@@ -49,7 +49,10 @@ const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 export function matchIntent(question: string): { intent: string; arg?: string } | null {
   const q = norm(question);
   if (!q) return null;
-  const search = q.match(/^(?:busca|buscar|encuentra|encontrar)(?: en craft| en el indice| en conocimiento)?(?: el| la| los| las| un| una)?(?: documento| documentos| nota| notas)?(?: de| sobre| del)? (.+)$/);
+  // Lo que pide redactar, relacionar o razonar lo responde Claude, no una consulta.
+  if (/^(prepara|redacta|escribe|haz|hazme|resume|resumeme|analiza|compara|explica|recomienda|aconseja|sugiere)\b/.test(q)
+    || /relaciona|vincula|por que|deberia|me conviene|que opinas|resumen semanal/.test(q)) return null;
+  const search = q.match(/^(?:busca|buscar|encuentra|encontrar)(?: en mi documentacion| en mis documentos| en mis notas)?(?: de craft)?(?: en craft| en el indice| en conocimiento)?(?: el| la| los| las| un| una)?(?: documento| documentos| nota| notas)?(?: de| sobre| del)? (.+)$/);
   if (search) return { intent: "search", arg: search[1] };
   if (/forma|fatiga|frescura|preparad|cansad|descansad|\bctl\b|\btsb\b/.test(q)) return { intent: "fitness" };
   if (/marca|record|mejores? tiempos?/.test(q)) return { intent: "prs" };

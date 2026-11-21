@@ -25,7 +25,7 @@ async function close(db: pg.Client, id: string, status: "done" | "error", fields
   );
 }
 
-async function usedToday(db: pg.Client, uid: string) {
+export async function usedToday(db: pg.Client, uid: string) {
   const { rows } = await db.query<{ n: string }>(
     `select count(*) n from public.ai_jobs where user_id = $1 and provider = 'claude_cli'
         and started_at >= (date_trunc('day', now() at time zone 'Europe/Madrid') at time zone 'Europe/Madrid')`,

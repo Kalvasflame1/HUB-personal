@@ -240,6 +240,9 @@ create table public.reports (
   metrics      jsonb not null default '{}',  -- cifras calculadas con SQL
   body_md      text,                          -- redacción (plantilla o IA)
   generated_by text not null default 'template' check (generated_by in ('template','ai')),
+  -- F5-7 (20261121400000_reports_ai_summary.sql): comentario de Claude aparte de la plantilla,
+  -- solo en semanal y mensual; al regenerar sin IA se conserva el anterior.
+  -- ai_summary text (≤ 12000), ai_model text, ai_generated_at timestamptz
   craft_url    text,                          -- si además se publica en Craft
   is_demo      boolean not null default false,
   created_at   timestamptz not null default now(),
