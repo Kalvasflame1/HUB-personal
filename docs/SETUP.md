@@ -150,6 +150,9 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 | `report_monthly` | Día 1, 07:00 | Activa |
 | `watchdog` | Cada hora: avisa si una tarea lleva demasiado sin terminar bien | Activa |
 | `craft_index` | Cada hora (solo lee lo modificado) | Activa |
+| `craft_extras` | Cada hora: próximos eventos del último Informe Diario y tabla «Seguimiento» | Activa (21-11-2026) |
+| `craft_changes` | Cada minuto, solo si hay cambios del seguimiento hechos desde la app | Activa (21-11-2026) |
+| `podcast` | Cada 10 min entre 05:00 y 13:00 hasta tener el episodio del día (atajo «HUB - Podcast») | Activa (21-11-2026) |
 | `backup` | 03:30 | Activa (copia local comprobada, §10) |
 | `cleanup` | Domingo 04:00 | Activa (reglas en §10) |
 

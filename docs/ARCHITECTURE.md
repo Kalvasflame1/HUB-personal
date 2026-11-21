@@ -185,6 +185,7 @@ hub-personal/
 | `NEXT_PUBLIC_APP_URL` | web | No | URL pública de la PWA |
 | `SUPABASE_URL` | worker | No | Igual que la anterior |
 | `SUPABASE_SECRET_KEY` | worker | **Sí** | Acceso de servicio a Storage (subida del podcast). Solo en `apps/worker/.env`, en el Mac mini; configurada y comprobada el 18-11-2026 |
+| `CRAFT_WRITE_API_URL` / `CRAFT_WRITE_API_KEY` | worker | **Sí** | Conexión de escritura de Craft limitada al documento «🗂️ Seguimiento activo» (creada el 21-11-2026). Solo la usa el aplicador de cambios del seguimiento; la lectura sigue por `CRAFT_API_*` |
 | `SUPABASE_DB_URL` | worker | **Sí** | Cadena de conexión para `pg_dump` |
 | `HUB_USER_ID` | worker | No | UUID del único usuario, para escribir filas a su nombre |
 | `STRAVA_CLIENT_ID` | worker | No | App de Strava |

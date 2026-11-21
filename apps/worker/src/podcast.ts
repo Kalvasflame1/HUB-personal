@@ -4,7 +4,7 @@
  * 1. Lanza el atajo del Mac «HUB - Podcast», que lee podcast_hoy.txt (lo deja Cowork en iCloud)
  *    y devuelve el audio con la voz de Siri. El worker no entra en iCloud: se lo pide a Atajos.
  * 2. Si el audio es el mismo que el del último episodio (Cowork aún no ha dejado guion nuevo),
- *    se omite y se reintenta en la siguiente vuelta, hasta las 13:00.
+ *    se omite y se reintenta en la siguiente vuelta, hasta las 13:00 (desde las 05:00).
  * 3. Lo convierte a AAC mono de 64 kbps con afconvert (≈ 77 MB → 3,4 MB), lo sube al bucket
  *    privado «podcast» como <user_id>/AAAA-MM-DD.m4a y registra la fila en podcast_episodes.
  * 4. Conserva los 7 episodios más recientes.
@@ -12,7 +12,7 @@
  *   npm run podcast --workspace apps/worker            como lo haría el planificador
  *   npm run podcast --workspace apps/worker -- --force aunque ya exista el de hoy
  */
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
@@ -27,7 +27,7 @@ const SHORTCUT = "HUB - Podcast";
 const DIR = join(homedir(), "Library/Application Support/PersonalHub/podcast");
 const STATE = join(DIR, "last.json");
 const KEEP = 7;
-const FROM = "06:30";
+const FROM = "05:00";
 const UNTIL = "13:00";
 const TZ = "Europe/Madrid";
 
@@ -66,6 +66,26 @@ async function durationOf(file: string) {
   return Number.isFinite(s) ? Math.round(s) : null;
 }
 
+/**
+ * Lanza el atajo con la entrada estándar cerrada. Con execFile la entrada queda abierta como
+ * tubería y `shortcuts run` se queda esperándola indefinidamente (comprobado el 21-11-2026:
+ * desde /bin/sh termina en 43 s; desde Node se colgaba hasta el tiempo límite).
+ */
+function runShortcut(output: string, timeoutMs = 5 * 60_000) {
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn("/usr/bin/shortcuts", ["run", SHORTCUT, "--output-path", output], { stdio: ["ignore", "ignore", "pipe"] });
+    let stderr = "";
+    child.stderr.on("data", (d) => { stderr += String(d); });
+    const timer = setTimeout(() => { child.kill("SIGTERM"); reject(new Error(`El atajo «${SHORTCUT}» no terminó en ${timeoutMs / 60_000} minutos`)); }, timeoutMs);
+    child.on("error", (e) => { clearTimeout(timer); reject(e); });
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (code === 0) resolve();
+      else reject(new Error(`El atajo «${SHORTCUT}» falló (código ${code}): ${stderr.trim().slice(0, 300)}`));
+    });
+  });
+}
+
 type LastState = { hash: string; duration: number | null; date: string };
 
 export async function podcast(db: pg.Client, opts: { force?: boolean } = {}): Promise<JobResult> {
@@ -82,12 +102,7 @@ export async function podcast(db: pg.Client, opts: { force?: boolean } = {}): Pr
   await rm(raw, { force: true });
 
   // 1. Atajo (voz de Siri). Unos 45 s para 7 min de audio
-  try {
-    await run("/usr/bin/shortcuts", ["run", SHORTCUT, "--output-path", raw], { timeout: 5 * 60_000 });
-  } catch (e) {
-    const err = e as Error & { stderr?: string; killed?: boolean; code?: number };
-    throw new Error(`El atajo «${SHORTCUT}» falló${err.killed ? " (tiempo agotado)" : ""}: ${(err.stderr || err.message).trim().slice(0, 300)}`);
-  }
+  await runShortcut(raw);
   const rawSize = (await stat(raw)).size;
   if (rawSize < 10_000) throw new Error(`El atajo devolvió un audio vacío (${rawSize} bytes)`);
 

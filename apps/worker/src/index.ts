@@ -17,6 +17,8 @@ import { generateReport } from "./reports.ts";
 import { backup } from "./backup.ts";
 import { indexCraft } from "./craft/index.ts";
 import { cleanup } from "./cleanup.ts";
+import { applyTrackingChanges, pendingTrackingChanges, readCraftExtras } from "./craft/extras.ts";
+import { podcast } from "./podcast.ts";
 
 const TZ = "Europe/Madrid";
 
@@ -28,6 +30,7 @@ type Spec = {
   weekday?: number;    // 0 = lunes
   monthday?: number;   // 1..28
   staleAfter: number;  // minutos sin ejecución correcta para avisar
+  window?: [string, string]; // "HH:MM"–"HH:MM" de Madrid; fuera de la ventana ni se intenta
 };
 
 const JOBS: Spec[] = [
@@ -37,6 +40,9 @@ const JOBS: Spec[] = [
   { name: "report_weekly", at: "07:00", weekday: 0, fn: (db) => generateReport(db, "weekly"), staleAfter: 8 * 24 * 60 },
   { name: "report_monthly", at: "07:00", monthday: 1, fn: (db) => generateReport(db, "monthly"), staleAfter: 32 * 24 * 60 },
   { name: "craft_index", every: 60, fn: (db) => indexCraft(db), staleAfter: 6 * 60 },
+  { name: "craft_extras", every: 60, fn: readCraftExtras, staleAfter: 6 * 60 },
+  // Podcast: cada 10 min entre 05:00 y 13:00 (listo para el viaje de las 05:30) hasta que haya guion nuevo; luego se omite hasta mañana
+  { name: "podcast", every: 10, window: ["05:00", "13:00"], fn: (db) => podcast(db), staleAfter: 26 * 60 },
   { name: "backup", at: "03:30", fn: backup, staleAfter: 3 * 24 * 60 },
   { name: "cleanup", at: "04:00", weekday: 6, fn: (db) => cleanup(db), staleAfter: 8 * 24 * 60 },
   { name: "watchdog", every: 60, fn: watchdog, staleAfter: 0 },
@@ -74,7 +80,15 @@ function lastSlot(spec: Spec, now: Date): Date {
   return new Date(0);
 }
 
+function inWindow(spec: Spec, now: Date) {
+  if (!spec.window) return true;
+  const w = madridWall(now);
+  const hm = `${String(w.h).padStart(2, "0")}:${String(w.mi).padStart(2, "0")}`;
+  return hm >= spec.window[0] && hm < spec.window[1];
+}
+
 function isDue(spec: Spec, last: Date | undefined, now: Date) {
+  if (!inWindow(spec, now)) return false;
   if (!last) return true;
   if (spec.every) return now.getTime() - last.getTime() >= spec.every * 60_000 - 30_000;
   return last < lastSlot(spec, now);
@@ -130,6 +144,15 @@ async function tick() {
   if (busy) return;
   busy = true;
   try {
+    // Cambios del seguimiento pedidos desde la app: se aplican en Craft en el minuto siguiente.
+    // Solo se registra ejecución cuando hay algo en cola.
+    const q = await connect();
+    try {
+      if (await pendingTrackingChanges(q)) await runJob("craft_changes", applyTrackingChanges);
+    } finally {
+      await q.end();
+    }
+
     const last = await lastRuns();
     const now = new Date();
     for (const spec of JOBS) {

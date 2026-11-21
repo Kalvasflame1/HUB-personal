@@ -23,6 +23,9 @@ const LABEL: Record<string, string> = {
   craft_index: "Índice de Craft",
   backup: "Copia de seguridad",
   cleanup: "Limpieza",
+  craft_extras: "Eventos y seguimiento de Craft",
+  craft_changes: "Cambios del seguimiento en Craft",
+  podcast: "Podcast diario",
 };
 export const jobLabel = (name: string) => LABEL[name] ?? name;
 
