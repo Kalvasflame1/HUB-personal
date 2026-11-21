@@ -81,6 +81,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"craft_daily_reports": {
+                  Row: {
+                    "external_id": string,"fetched_at": string,"id": string,"markdown": string,"report_date": string,"source_url": string | null,"title": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "external_id": string,"fetched_at"?: string,"id"?: string,"markdown": string,"report_date": string,"source_url"?: string | null,"title": string,"user_id": string
+                  }
+                  Update: {
+                    "external_id"?: string,"fetched_at"?: string,"id"?: string,"markdown"?: string,"report_date"?: string,"source_url"?: string | null,"title"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"craft_events": {
                   Row: {
                     "created_at": string,"end_date": string | null,"event_date": string | null,"icons": string | null,"id": string,"items": NonNullable<Json>,"label": string,"position": number,"raw": string,"report_date": string,"report_doc": string,"source_url": string | null,"user_id": string
@@ -334,6 +348,20 @@ isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
     }
+                  ]
+                },"web_digests": {
+                  Row: {
+                    "body": string,"created_at": string,"digest_date": string,"id": string,"items": NonNullable<Json>,"model": string | null,"usage": Json | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"digest_date": string,"id"?: string,"items"?: NonNullable<Json>,"model"?: string | null,"usage"?: Json | null,"user_id": string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"digest_date"?: string,"id"?: string,"items"?: NonNullable<Json>,"model"?: string | null,"usage"?: Json | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"web_items": {
                   Row: {

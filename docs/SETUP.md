@@ -156,6 +156,7 @@ Si se elige la **alternativa Tailscale**: instalar Tailscale en el Mac mini, iPh
 | `podcast` | Cada 10 min entre 05:00 y 13:00 hasta tener el episodio del día (atajo «HUB - Podcast») | Activa (21-11-2026) |
 | `backup` | 03:30 | Activa (copia local comprobada, §10) |
 | `cleanup` | Domingo 04:00 | Activa (reglas en §10) |
+| `web_digest` | 07:30: resumen de las fuentes web con Claude (una llamada al día; `npm run web:digest --workspace apps/worker -- --force` para repetirlo) | Activa (21-11-2026) |
 
 6. Avisos: si una tarea falla se crea un aviso (solo el primero de una racha de fallos); si lleva demasiado sin terminar bien, otro, como máximo uno al día.
 

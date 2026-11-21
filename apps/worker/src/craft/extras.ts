@@ -121,6 +121,33 @@ export function parseEvents(markdown: string, reportDate: string): ParsedEvent[]
   return out;
 }
 
+/**
+ * D4 (21-11-2026): copia de lectura del Informe Diario de Cowork para mostrarlo en el Hub.
+ * Se guarda el markdown sin las etiquetas de página y sin sangría; se conservan los 7 últimos.
+ */
+async function saveDailyReport(db: pg.Client, doc: { external_id: string; title: string; source_url: string | null; date: string }, md: string) {
+  const clean = md
+    .replace(/<\/?(page|content)\b[^>]*>/g, "")
+    .replace(/<pageTitle>[\s\S]*?<\/pageTitle>/g, "")
+    .replace(/^[ \t]+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, 100_000);
+  await db.query(
+    `insert into public.craft_daily_reports (user_id, external_id, report_date, title, markdown, source_url)
+     values ($1, $2, $3, $4, $5, $6)
+     on conflict (user_id, report_date) do update set external_id = excluded.external_id, title = excluded.title,
+       markdown = excluded.markdown, source_url = excluded.source_url, fetched_at = now()
+     where craft_daily_reports.markdown is distinct from excluded.markdown`,
+    [USER_ID(), doc.external_id, doc.date, doc.title, clean, doc.source_url],
+  );
+  await db.query(
+    `delete from public.craft_daily_reports where user_id = $1 and report_date not in
+       (select report_date from public.craft_daily_reports where user_id = $1 order by report_date desc limit 7)`,
+    [USER_ID()],
+  );
+}
+
 async function readEvents(db: pg.Client) {
   // El índice de Craft ya conoce los informes: se elige el de fecha más reciente según su título
   const { rows } = await db.query<{ external_id: string; title: string; source_url: string | null }>(
@@ -135,7 +162,8 @@ async function readEvents(db: pg.Client) {
     .sort((a, b) => b.date.localeCompare(a.date))[0];
   if (!latest) return { events: 0, report: null };
 
-  const md = await (await craft("/blocks", { id: latest.external_id, maxDepth: "3" }, "text/markdown")).text();
+  const md = await (await craft("/blocks", { id: latest.external_id }, "text/markdown")).text();
+  await saveDailyReport(db, latest, md);
   const events = parseEvents(md, latest.date);
   if (events.length === 0) return { events: 0, report: latest.date, note: "sin sección de eventos" };
 

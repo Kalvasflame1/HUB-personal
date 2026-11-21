@@ -6,6 +6,7 @@ import { Card, CardTitle, DemoBadge, Empty, Pill, SkeletonGrid } from "@/compone
 import { CRAFT_DOCS } from "@/lib/knowledge";
 import { markNotificationRead } from "./actions";
 import { PodcastPlayer } from "@/components/podcast-player";
+import { sections } from "@/components/daily-report";
 import { ElevenReaderButton } from "@/components/elevenreader-button";
 import { ReadinessBar } from "@/components/readiness";
 import { EventList } from "@/components/craft-events";
@@ -26,7 +27,7 @@ const LEVEL_TONE = { info: "text-ink-3", success: "text-good", warning: "text-wa
 async function Dashboard() {
   const { supabase, user } = await getSession();
 
-  const [profile, tasks, weekly, activity, reports, notifications, episodes, fitness, eventsRes] = await Promise.all([
+  const [profile, tasks, weekly, activity, reports, notifications, episodes, fitness, eventsRes, coworkRes] = await Promise.all([
     supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle(),
     supabase.from("v_tasks_pending").select("id,title,due_date,priority,overdue,project_name,is_demo").order("due_date", { ascending: true, nullsFirst: false }).order("priority"),
     supabase.from("v_running_weekly").select("week_start,km,runs,pace_s_per_km").order("week_start", { ascending: false }).limit(8),
@@ -36,7 +37,12 @@ async function Dashboard() {
     supabase.from("podcast_episodes").select("id,episode_date,title,storage_path,duration_s").order("episode_date", { ascending: false }).limit(1),
     loadFitness(supabase), // misma ventana que Running para que los valores coincidan
     supabase.from("craft_events").select("id,event_date,end_date,label,items").or(`event_date.gte.${todayISO()},end_date.gte.${todayISO()}`).lte("event_date", addDaysISO(todayISO(), 7)).order("position"),
+    supabase.from("craft_daily_reports").select("report_date,markdown").order("report_date", { ascending: false }).limit(1).maybeSingle(),
   ]);
+
+  // Resumen diario de Cowork (D4): primera frase del tiempo para la tarjeta de Informes
+  const cowork = coworkRes.data;
+  const coworkWeather = cowork ? (sections(cowork.markdown).find((x) => /^tiempo/i.test(x.title))?.body.split(/(?<=\.)\s/)[0] ?? null) : null;
 
   // Último episodio del podcast: URL firmada de 3 horas (el bucket es privado)
   const episode = episodes.data?.[0];
@@ -163,7 +169,13 @@ async function Dashboard() {
 
       <Card className="lg:col-span-2">
         <CardTitle action={<Link href="/informes" className="text-[13px] font-medium text-accent">Ver todos</Link>}>Informes</CardTitle>
-        {(reports.data ?? []).length === 0 ? (
+        {cowork ? (
+          <Link href="/informes#cowork" className="press mb-3 block border-b border-line pb-3">
+            <p className="text-[15px] font-medium">Resumen diario · {cowork.report_date === todayISO() ? "hoy" : dayShort(cowork.report_date)}</p>
+            {coworkWeather ? <p className="line-clamp-2 text-[13px] leading-snug text-ink-3">{coworkWeather}</p> : null}
+          </Link>
+        ) : null}
+        {(reports.data ?? []).length === 0 && !cowork ? (
           <Empty title="Aún no hay informes" />
         ) : (
           <ul className="flex flex-col gap-3">

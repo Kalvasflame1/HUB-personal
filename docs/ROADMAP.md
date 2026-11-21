@@ -1,7 +1,7 @@
 # Personal Hub · Hoja de ruta
 
 Versión 0.1 (propuesta para revisión) · 16 de noviembre de 2026
-Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 cerrada el 18-11-2026. Fase 4 cerrada el 21-11-2026 tras la prueba de 72 horas sin intervención. Fase 5 en curso.**
+Estado: **plan aprobado el 16-11-2026 (D1–D6 con las recomendaciones). Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026: desplegada en Vercel (https://hub-personal-tau.vercel.app) e instalada como PWA en el iPhone. Fase 3 cerrada el 18-11-2026. Fase 4 cerrada el 21-11-2026 tras la prueba de 72 horas sin intervención. Fase 5 cerrada el 21-11-2026 (F5-10, opcional, aplazada por el usuario). Siguiente: Fase 6, ampliaciones sin orden fijado.**
 
 Las fases siguen las del briefing. Cada tarea tiene identificador, y cada fase termina con un criterio verificable y una parada para tu revisión. No doy fechas: cada fase se mide en sesiones de trabajo con Claude Code, y el ritmo lo marcas tú.
 
@@ -128,13 +128,15 @@ Comprobado el 17-11-2026: septiembre 43,80 km (7), octubre 78,28 km (13) y novie
 - [x] F5-5 Herramientas de solo lectura del asistente sobre Supabase (21-11-2026, resuelto sin dar herramientas a Claude: el worker reúne con SQL tareas, seguimiento, eventos, running, forma, informes, lecturas web, documentos de Craft que coinciden con la pregunta y la Memoria, según las fuentes activadas, en bloques numerados que la respuesta cita)
 - [x] F5-6 Consulta de Craft en vivo desde el asistente (nivel C), con citas (21-11-2026: el worker busca en el índice y lee enteros, en el momento, los dos documentos propios más relevantes con la conexión de solo lectura (`GET /blocks`, markdown); las tablas de Craft llegan como «- fila · campo: valor». Más de 12.000 caracteres: principio + fragmentos que coinciden; si Craft falla, texto del índice. Noticias y resúmenes, solo fragmentos. Claude sigue sin herramientas. Probado con el historial del Koleos: 13 operaciones y sumas correctas, en 9,8 s)
 - [x] F5-7 Redacción con IA de los informes semanal y mensual (21-11-2026: comentario de Claude con el modelo «para informes» de la configuración, en `reports.ai_summary`, sobre las cifras de la plantilla, que se siguen guardando igual; cuenta para el tope diario y queda en `ai_jobs` con `kind = 'report'`. Sin IA, con el tope alcanzado o si Claude falla, el informe sale sin comentario. En Informes, el último semanal y el último mensual van arriba con su comentario y las cifras debajo. Probado con la semana del 9-11 (Sonnet, 8,5 s) y octubre (9,8 s))
-- [ ] F5-8 Resúmenes de fuentes web
-- [ ] F5-9 Decisión D4: unificar o no con el «Resumen diario» actual
-- [ ] F5-10 Opcional: MCP de Supabase para que Cowork consulte los datos del Hub
+- [x] F5-8 Resúmenes de fuentes web (21-11-2026: cinco fuentes añadidas por el usuario —Expansión Mercados, Xataka, Applesfera, El Norte de Castilla · Castilla y León y Palencia en la Red—, con el feed detectado por el worker. Tarea `web_digest` a las 07:30: **una** llamada a Claude al día (no una por entrada, por el tope) con las entradas de 24 horas, agrupadas por tema, citadas por número y con «Te afecta» según los asuntos abiertos de «Seguimiento activo»; en `web_digests`, 30 días. Tarjeta «Resumen de tus fuentes» arriba en Información web. Primera prueba: 74 entradas, 14 citadas, Haiku, 13,8 s. Sin IA o con el tope alcanzado queda como «skipped»)
+- [x] F5-9 Decisión D4: unificar o no con el «Resumen diario» actual. **Decidido el 21-11-2026: conviven y se lee en el Hub.** Cowork sigue escribiendo el 📰 Informe Diario en Craft; el worker (`craft_extras`, cada hora) guarda una copia de lectura de los 7 últimos en `craft_daily_reports`, y la web lo muestra en Informes (tiempo y agenda del día abiertos, el resto por secciones plegadas, sin emojis) y lo enlaza desde Inicio. Próximos eventos y Cierre del día no se repiten: enlaces a Productividad y a Craft.
+- [ ] F5-10 Opcional: MCP de Supabase para que Cowork consulte los datos del Hub (21-11-2026: **ahora no**, por decisión del usuario; queda como opcional)
 
 **Hecho cuando:** las seis preguntas de ejemplo del briefing reciben respuesta correcta con fuentes, el consumo queda dentro del tope acordado, y con `AI_PROVIDER=none` todo lo demás sigue funcionando.
 
-**Prueba del 21-11-2026 (criterio cumplido; quedan F5-6 a F5-10):**
+**Cerrada el 21-11-2026.** Hechas F5-1 a F5-9 y F5-11; F5-10 (MCP de Supabase para Cowork) queda como opcional, aplazada por el usuario.
+
+**Prueba del 21-11-2026 (criterio cumplido):**
 - Con consultas (sin IA): «¿Cuántos kilómetros he corrido este mes?», «¿Cómo ha evolucionado mi ritmo?» y «¿Qué tareas tengo pendientes?», cada una con su fuente.
 - Con Claude (Haiku): «Prepara mi resumen semanal» (26 s, ~5.500 tokens de salida; tareas, running por semanas, finanzas, asuntos y la semana próxima), «Busca en mi documentación de Craft la información relacionada con el Koleos» (9 s, cita la ficha del coche y la Memoria) y «Relaciona mis tareas actuales con documentación que ya tengo almacenada» (9 s; bloque de coincidencias por título con al menos dos palabras en común, y Claude descarta los falsos positivos). Todas con fuentes.
 - Reparto: lo que pide redactar, relacionar o razonar («prepara», «resume», «relaciona», «me conviene»…) ya no lo atrapa una consulta, va a Claude.

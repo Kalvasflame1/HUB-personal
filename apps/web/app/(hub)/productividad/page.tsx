@@ -34,6 +34,7 @@ const JOB_LABEL: Record<string, string> = {
   strava_sync: "Sincronización de Strava",
   craft_index: "Índice de Craft",
   craft_extras: "Eventos y seguimiento de Craft",
+  web_digest: "Resumen de fuentes web",
   craft_changes: "Cambios del seguimiento en Craft",
   podcast: "Podcast diario",
   web_fetch: "Fuentes web",

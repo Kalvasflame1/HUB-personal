@@ -371,7 +371,7 @@ Matices:
 
 | Permiso de la web | Tablas |
 |---|---|
-| Solo lectura | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `job_runs`, `kb_documents`, `reports`, `podcast_episodes`, `craft_events`, `craft_tracking` |
+| Solo lectura | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `job_runs`, `kb_documents`, `reports`, `podcast_episodes`, `craft_events`, `craft_tracking`, `craft_daily_reports` (copia de lectura de los 7 últimos Informes Diarios de Cowork, D4), `web_digests` (resumen diario de las fuentes web, F5-8; 30 días) |
 | Lectura y cambiar una casilla | `web_items` (`is_read`, `is_saved`), `notifications` (`read_at`) |
 | Leer y añadir | `activity_log`, `assistant_settings` (cada guardado es una versión nueva; restaurar es copiar una versión antigua como nueva), `craft_tracking_changes` (solo `external_id`, `changes` y `base`; únicamente asuntos que existen en `craft_tracking` y solo los campos `title`, `category`, `status`, `due_date` y `notes`), `ai_jobs` (solo `kind` e `input`; únicamente preguntas `assistant` en cola: estado, respuesta, proveedor y consumo los escribe el worker) |
 | Todo (`owner_all`) | `tasks`, `projects`, `kb_links`, `web_sources`, `profiles`, `assistant_conversations`, `assistant_messages` |

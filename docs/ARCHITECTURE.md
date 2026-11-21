@@ -111,7 +111,7 @@ Flujo del asistente: la PWA inserta la pregunta en `ai_jobs` → un disparador h
 | D1 | Dónde se aloja el frontend | **Vercel Hobby** (gratis, HTTPS, accesible desde cualquier red, uso personal no comercial) | Servirlo desde el Mac mini con Tailscale: nada sale a Internet, pero el iPhone necesita la VPN activa |
 | D2 | Método de acceso | **Enlace mágico por correo + passkey** si está disponible en el plan gratuito; si no, correo y contraseña | Solo contraseña. **Implementado así en la Fase 2** (correo y contraseña); el enlace mágico queda como mejora |
 | D3 | Dónde viven las tareas | **En Supabase** (el Hub es la fuente). Las tareas de Craft se muestran aparte, en solo lectura, sin sincronización bidireccional | Usar las tareas de Craft como fuente única y que el Hub solo las muestre |
-| D4 | Informes: ¿sustituyen o conviven con tu «Resumen diario» actual? | **Conviven** en la primera entrega; el Hub enlaza a los artefactos existentes. Se decide la unificación en la Fase 5 | Migrar el resumen diario al Hub desde el principio |
+| D4 | Informes: ¿sustituyen o conviven con tu «Resumen diario» actual? | **Conviven** en la primera entrega; el Hub enlaza a los artefactos existentes. Se decide la unificación en la Fase 5. **Decisión final (21-11-2026): conviven y el Hub muestra el Informe Diario de Cowork en solo lectura** (`craft_daily_reports`) | Migrar el resumen diario al Hub desde el principio |
 | D5 | Sincronización de Strava | **Sondeo cada 30 min** desde el Mac mini | Webhook de Strava recibido por una Edge Function de Supabase (más inmediato, más piezas) |
 | D6 | Alojamiento del código | **Git local + GitHub privado** (gratis) | Solo Git local con copia de Time Machine |
 

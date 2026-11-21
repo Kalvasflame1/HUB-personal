@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ArrowUpRight, Bookmark, Check, Plus, Star, Trash2 } from "lucide-react";
+import { ArrowUpRight, Bookmark, Check, Plus, Sparkles, Star, Trash2 } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
-import { relative } from "@/lib/format";
+import { dayShort, relative, todayISO } from "@/lib/format";
+import { AiText, type AiSource } from "@/components/ai-text";
+import { MODELS } from "@/lib/assistant-settings";
 import { addSource, deleteSource, setItemFlag, toggleFavorite } from "./actions";
 
 export const metadata: Metadata = { title: "Información web" };
@@ -11,7 +13,7 @@ export const metadata: Metadata = { title: "Información web" };
 export default function WebPage() {
   return (
     <>
-      <PageHeader title="Información web" subtitle="Favoritos, fuentes y lecturas recientes." />
+      <PageHeader title="Información web" subtitle="Resumen del día, lecturas recientes, favoritos y fuentes." />
       <Suspense fallback={<SkeletonGrid />}>
         <Content />
       </Suspense>
@@ -59,11 +61,15 @@ function ItemRow({ item: i, source }: { item: Item; source?: string }) {
 
 async function Content() {
   const { supabase } = await getSession();
-  const [sourcesRes, itemsRes, savedRes] = await Promise.all([
+  const [sourcesRes, itemsRes, savedRes, digestRes] = await Promise.all([
     supabase.from("web_sources").select("id,name,url,category,kind,fetch_enabled,is_favorite,is_demo").order("is_favorite", { ascending: false }).order("name"),
     supabase.from("web_items").select("id,title,url,excerpt,published_at,source_id,is_demo,is_read,is_saved").order("published_at", { ascending: false }).limit(12),
     supabase.from("web_items").select("id,title,url,excerpt,published_at,source_id,is_demo,is_read,is_saved").eq("is_saved", true).order("published_at", { ascending: false }).limit(50),
+    supabase.from("web_digests").select("digest_date,body,items,model").order("digest_date", { ascending: false }).limit(1).maybeSingle(),
   ]);
+  const digest = digestRes.data;
+  const digestItems = (digest?.items ?? []) as { n: number; title: string; url: string; source: string }[];
+  const digestSources: AiSource[] = digestItems.map((d) => ({ n: d.n, label: `${d.source}: ${d.title}`, href: d.url }));
   const sources = sourcesRes.data ?? [];
   const items = itemsRes.data ?? [];
   const saved = savedRes.data ?? [];
@@ -72,6 +78,30 @@ async function Content() {
 
   return (
     <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+      {digest ? (
+        <Card className="lg:col-span-4">
+          <CardTitle action={<span className="text-[12px] text-ink-3">{digest.digest_date === todayISO() ? "hoy" : dayShort(digest.digest_date)}</span>}>Resumen de tus fuentes</CardTitle>
+          <AiText text={digest.body} sources={digestSources} />
+          {digestItems.length ? (
+            <details className="mt-3 border-t border-line pt-3">
+              <summary className="press cursor-pointer text-[13px] font-medium text-accent">Noticias citadas ({digestItems.length})</summary>
+              <ul className="mt-2 flex flex-col gap-1.5">
+                {digestItems.map((d) => (
+                  <li key={d.n} className="flex gap-2 text-[13px]">
+                    <span className="tnum w-5 shrink-0 text-right font-semibold text-accent">{d.n}</span>
+                    <a href={d.url} target="_blank" rel="noreferrer" className="min-w-0 text-ink-2 hover:text-accent"><span className="text-ink-3">{d.source} · </span>{d.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+          <p className="mt-3 flex items-center gap-1.5 text-[12px] text-ink-3">
+            <Sparkles size={13} className="text-accent" aria-hidden />
+            Redactado por Claude {MODELS.find((m) => m.value === digest.model)?.label ?? digest.model} con las noticias de las últimas 24 horas; se renueva cada mañana a las 07:30
+          </p>
+        </Card>
+      ) : null}
+
       <Card className="lg:col-span-4">
         <CardTitle action={<DemoBadge show={items.some((i) => i.is_demo)} />}>Lecturas recientes</CardTitle>
         {items.length === 0 ? (

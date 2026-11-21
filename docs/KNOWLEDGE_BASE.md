@@ -111,7 +111,7 @@ Tú decides la lista final de carpetas incluidas y excluidas antes de activar la
 
 | Artefacto | Tratamiento propuesto |
 |---|---|
-| Resumen diario / Panel del Resumen Diario | Enlace desde el dashboard. Posible unificación en la Fase 5 (D4) |
+| Resumen diario / Panel del Resumen Diario | Se lee dentro del Hub, en Informes, desde el 21-11-2026 (D4: conviven; Cowork lo sigue escribiendo) |
 | Coach Personal · Marcos / Coach Chat Marcos | Enlace desde el módulo Running. El Hub aporta el histórico y las estadísticas; el coach conserva la conversación |
 | Taller del Resumen Diario, documentos de análisis | Enlace en «Conocimiento» |
 | Simulador de ahorro familiar | Enlace; candidato para el futuro módulo de finanzas |

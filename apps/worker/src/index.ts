@@ -20,6 +20,7 @@ import { cleanup } from "./cleanup.ts";
 import { applyTrackingChanges, pendingTrackingChanges, readCraftExtras } from "./craft/extras.ts";
 import { podcast } from "./podcast.ts";
 import { drainAiQueue, listenAiJobs } from "./ai/queue.ts";
+import { webDigest } from "./ai/web-digest.ts";
 
 const TZ = "Europe/Madrid";
 
@@ -37,6 +38,8 @@ type Spec = {
 const JOBS: Spec[] = [
   { name: "strava_sync", every: 30, fn: (db) => syncStrava(db, { details: 90 }), staleAfter: 6 * 60 },
   { name: "web_fetch", every: 120, fn: fetchWeb, staleAfter: 12 * 60 },
+  // Resumen de las fuentes web con Claude (F5-8): una llamada al día; sin IA queda como «skipped»
+  { name: "web_digest", at: "07:30", fn: (db) => webDigest(db), staleAfter: 26 * 60 },
   { name: "report_daily", at: "06:30", fn: (db) => generateReport(db, "daily"), staleAfter: 26 * 60 },
   { name: "report_weekly", at: "07:00", weekday: 0, fn: (db) => generateReport(db, "weekly"), staleAfter: 8 * 24 * 60 },
   { name: "report_monthly", at: "07:00", monthday: 1, fn: (db) => generateReport(db, "monthly"), staleAfter: 32 * 24 * 60 },

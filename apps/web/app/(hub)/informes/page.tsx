@@ -6,13 +6,14 @@ import { Sparkles } from "lucide-react";
 import { dayShort } from "@/lib/format";
 import { AiText } from "@/components/ai-text";
 import { MODELS } from "@/lib/assistant-settings";
+import { DailyReport } from "@/components/daily-report";
 
 export const metadata: Metadata = { title: "Informes" };
 
 export default function InformesPage() {
   return (
     <>
-      <PageHeader title="Informes" subtitle="Resúmenes diarios, semanales y mensuales. Las cifras salen de consultas; el comentario de los semanales y mensuales lo redacta Claude." />
+      <PageHeader title="Informes" subtitle="El Resumen diario de Cowork y los informes del Hub: las cifras salen de consultas y el comentario de los semanales y mensuales lo redacta Claude." />
       <Suspense fallback={<SkeletonGrid blocks={3} />}>
         <Content />
       </Suspense>
@@ -46,9 +47,13 @@ function Body({ md }: { md: string }) {
 
 async function Content() {
   const { supabase } = await getSession();
-  const { data } = await supabase.from("reports").select("id,kind,title,period_start,period_end,body_md,generated_by,is_demo,ai_summary,ai_model").order("period_end", { ascending: false }).limit(30);
+  const [{ data }, cowork] = await Promise.all([
+    supabase.from("reports").select("id,kind,title,period_start,period_end,body_md,generated_by,is_demo,ai_summary,ai_model").order("period_end", { ascending: false }).limit(30),
+    supabase.from("craft_daily_reports").select("report_date,markdown,source_url").order("report_date", { ascending: false }).limit(1).maybeSingle(),
+  ]);
   const reports = data ?? [];
-  if (reports.length === 0) {
+  const daily = cowork.data;
+  if (reports.length === 0 && !daily) {
     return <Empty title="Aún no hay informes" hint="El Mac mini los genera cada mañana: el diario a las 06:30, el semanal los lunes y el mensual el día 1." />;
   }
   // Arriba, el último semanal y el último mensual (los que llevan comentario); debajo, el resto por fecha.
@@ -56,6 +61,15 @@ async function Content() {
   const ordered = [...featured, ...reports.filter((r) => !featured.includes(r))];
   return (
     <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
+      {daily ? (
+        <div id="cowork" className="scroll-mt-4 lg:col-span-6"><Card>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Pill tone="accent">Resumen diario</Pill>
+            <span className="text-[12px] text-ink-3">{dayShort(daily.report_date)} · lo escribe Cowork en Craft; aquí solo se lee</span>
+          </div>
+          <DailyReport markdown={daily.markdown} sourceUrl={daily.source_url} />
+        </Card></div>
+      ) : null}
       {ordered.map((r, i) => (
         <Card key={r.id} className={i < featured.length && featured.length === 1 ? "lg:col-span-6" : "lg:col-span-3"}>
           <div className="mb-3 flex flex-wrap items-center gap-2">
