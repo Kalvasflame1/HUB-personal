@@ -29,6 +29,7 @@ PostgreSQL gestionado por Supabase. El SQL de este documento es el borrador de l
 | Asistente | `assistant_conversations`, `assistant_messages`, `ai_jobs` |
 | Conocimiento | `kb_documents`, `kb_links` |
 | Eventos y seguimiento de Craft | `craft_events` (sección «Próximos eventos» del último Informe Diario, una fila por día, se sustituye entera), `craft_tracking` (tabla «Seguimiento» de «🗂️ Seguimiento activo») y `craft_tracking_changes` (cola de cambios pedidos desde la app; el worker los aplica en Craft tras comprobar que el asunto no cambió, o los marca `conflict`); migraciones `20261121000000_craft_events_tracking.sql` y `20261121100000_craft_tracking_changes.sql` |
+| Configuración del asistente | `assistant_settings`: instrucciones, estilo, fuentes activables, modelo para preguntas y para informes, tope diario y atajos; una fila por versión, la vigente es la de `version` más alta; migración `20261121200000_assistant_settings.sql` |
 | Podcast | `podcast_episodes` (solo lectura para la web) y bucket privado de Storage `podcast`, con carpeta `<user_id>/`; migración `20261118200000_podcast.sql` |
 | Avisos | `notifications` |
 
@@ -364,7 +365,7 @@ Matices:
 |---|---|
 | Solo lectura | `strava_activities`, `strava_laps`, `strava_best_efforts`, `personal_records`, `job_runs`, `kb_documents`, `reports`, `podcast_episodes`, `craft_events`, `craft_tracking` |
 | Lectura y cambiar una casilla | `web_items` (`is_read`, `is_saved`), `notifications` (`read_at`) |
-| Leer y añadir | `activity_log`, `craft_tracking_changes` (solo `external_id`, `changes` y `base`; únicamente asuntos que existen en `craft_tracking` y solo los campos `title`, `category`, `status`, `due_date` y `notes`) |
+| Leer y añadir | `activity_log`, `assistant_settings` (cada guardado es una versión nueva; restaurar es copiar una versión antigua como nueva), `craft_tracking_changes` (solo `external_id`, `changes` y `base`; únicamente asuntos que existen en `craft_tracking` y solo los campos `title`, `category`, `status`, `due_date` y `notes`) |
 | Todo (`owner_all`) | `tasks`, `projects`, `kb_links`, `web_sources`, `profiles`, `ai_jobs`, `assistant_conversations`, `assistant_messages` |
 
   Para las de solo lectura se quitan además los permisos de escritura del rol (`revoke insert, update, delete`). Los borrados en cascada (por ejemplo, borrar una fuente web borra sus lecturas) siguen funcionando. Comprobado con el rol `authenticated` en una transacción deshecha: lo permitido funciona y lo demás da *permission denied*.

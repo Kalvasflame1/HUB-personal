@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowUp, BookOpen, Cpu, Database, Search } from "lucide-react";
+import { ArrowUp, BookOpen, Cpu, Database, Search, Settings } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
 import { answer, SUGGESTIONS, type Answer } from "@/lib/quick-answers";
+import { loadSettings } from "@/lib/assistant-settings";
 
 export const metadata: Metadata = { title: "Asistente" };
 
@@ -19,7 +20,12 @@ export default function AsistentePage({ searchParams }: PageProps<"/asistente">)
   return (
     <>
       <PageHeader title="Asistente" subtitle="Preguntas rápidas sobre tus datos, respondidas con consultas y sin IA.">
-        <Pill>Sin IA</Pill>
+        <div className="flex items-center gap-3">
+          <Pill>Sin IA</Pill>
+          <Link href="/asistente/configuracion" className="press flex items-center gap-1 text-[14px] font-medium text-accent">
+            <Settings size={16} aria-hidden /> Configuración
+          </Link>
+        </div>
       </PageHeader>
       <Suspense fallback={<SkeletonGrid blocks={2} />}>
         <Content question={question} />
@@ -65,7 +71,7 @@ function AnswerCard({ a }: { a: Answer }) {
 async function Content({ question }: { question: Promise<string> }) {
   const q = await question;
   const { supabase } = await getSession();
-  const result = q ? await answer(supabase, q) : null;
+  const [result, settings] = await Promise.all([q ? answer(supabase, q) : null, loadSettings(supabase)]);
 
   return (
     <div className="rise grid grid-cols-1 gap-4 lg:grid-cols-6">
@@ -93,6 +99,20 @@ async function Content({ question }: { question: Promise<string> }) {
               </div>
             )}
           </div>
+        ) : null}
+
+        {settings.shortcuts.length ? (
+          <>
+            <p className="mb-2 mt-5 text-[13px] font-semibold text-ink-2">Tus atajos</p>
+            <div className="flex flex-wrap gap-2">
+              {settings.shortcuts.map((s) => (
+                <Link key={s} href={`/asistente?q=${encodeURIComponent(s)}`}
+                  className={`press rounded-full border px-3 py-1.5 text-[14px] ${s === q ? "border-accent bg-accent-soft text-accent" : "border-accent/40 text-ink hover:border-accent"}`}>
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </>
         ) : null}
 
         <p className="mb-2 mt-5 text-[13px] font-semibold text-ink-2">Preguntas que ya sé responder</p>

@@ -67,6 +67,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"assistant_settings": {
+                  Row: {
+                    "created_at": string,"daily_cap": number,"id": string,"instructions": string,"model_quick": string,"model_reports": string,"note": string | null,"shortcuts": (string)[],"sources": NonNullable<Json>,"style": string,"user_id": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"daily_cap"?: number,"id"?: string,"instructions"?: string,"model_quick"?: string,"model_reports"?: string,"note"?: string | null,"shortcuts"?: (string)[],"sources"?: NonNullable<Json>,"style"?: string,"user_id"?: string,"version": number
+                  }
+                  Update: {
+                    "created_at"?: string,"daily_cap"?: number,"id"?: string,"instructions"?: string,"model_quick"?: string,"model_reports"?: string,"note"?: string | null,"shortcuts"?: (string)[],"sources"?: NonNullable<Json>,"style"?: string,"user_id"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"craft_events": {
                   Row: {
                     "created_at": string,"end_date": string | null,"event_date": string | null,"icons": string | null,"id": string,"items": NonNullable<Json>,"label": string,"position": number,"raw": string,"report_date": string,"report_doc": string,"source_url": string | null,"user_id": string
