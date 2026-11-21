@@ -67,6 +67,48 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"craft_events": {
+                  Row: {
+                    "created_at": string,"end_date": string | null,"event_date": string | null,"icons": string | null,"id": string,"items": NonNullable<Json>,"label": string,"position": number,"raw": string,"report_date": string,"report_doc": string,"source_url": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"end_date"?: string | null,"event_date"?: string | null,"icons"?: string | null,"id"?: string,"items"?: NonNullable<Json>,"label": string,"position": number,"raw": string,"report_date": string,"report_doc": string,"source_url"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"end_date"?: string | null,"event_date"?: string | null,"icons"?: string | null,"id"?: string,"items"?: NonNullable<Json>,"label"?: string,"position"?: number,"raw"?: string,"report_date"?: string,"report_doc"?: string,"source_url"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"craft_tracking": {
+                  Row: {
+                    "category": string | null,"due_date": string | null,"external_id": string,"id": string,"notes": string | null,"period": string | null,"source_url": string | null,"status": string | null,"status_key": string | null,"title": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category"?: string | null,"due_date"?: string | null,"external_id": string,"id"?: string,"notes"?: string | null,"period"?: string | null,"source_url"?: string | null,"status"?: string | null,"status_key"?: string | null,"title": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "category"?: string | null,"due_date"?: string | null,"external_id"?: string,"id"?: string,"notes"?: string | null,"period"?: string | null,"source_url"?: string | null,"status"?: string | null,"status_key"?: string | null,"title"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"craft_tracking_changes": {
+                  Row: {
+                    "applied_at": string | null,"base": NonNullable<Json>,"changes": NonNullable<Json>,"created_at": string,"error": string | null,"external_id": string,"id": string,"state": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "applied_at"?: string | null,"base": NonNullable<Json>,"changes": NonNullable<Json>,"created_at"?: string,"error"?: string | null,"external_id": string,"id"?: string,"state"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "applied_at"?: string | null,"base"?: NonNullable<Json>,"changes"?: NonNullable<Json>,"created_at"?: string,"error"?: string | null,"external_id"?: string,"id"?: string,"state"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"job_runs": {
                   Row: {
                     "details": NonNullable<Json>,"error": string | null,"finished_at": string | null,"id": number,"items": number | null,"job_name": string,"started_at": string,"status": string,"user_id": string

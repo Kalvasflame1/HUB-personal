@@ -4,9 +4,17 @@ import { Plus } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, PageHeader, Pill, SkeletonGrid } from "@/components/ui";
 import { dayShort, isoDaysAgo, relative, todayISO } from "@/lib/format";
+
+const ACTIVE_TRACKING = ["open", "in_progress", "watching"];
+const PROBLEM: Record<string, string> = {
+  conflict: "No se guardó: el asunto cambió en Craft mientras tanto. Revísalo y vuelve a editarlo.",
+  error: "No se pudo guardar en Craft. Se reintentará al editarlo de nuevo.",
+};
 import { addTask } from "./actions";
 import { craftUrl } from "@/lib/knowledge";
 import { DocLinks, TaskRow, type DocLink } from "./task-row";
+import { EventList } from "@/components/craft-events";
+import { TrackingList } from "@/components/craft-tracking";
 
 export const metadata: Metadata = { title: "Productividad" };
 
@@ -25,6 +33,7 @@ const PRIORITY = ["", "Máxima", "Alta", "Media", "Baja"];
 const JOB_LABEL: Record<string, string> = {
   strava_sync: "Sincronización de Strava",
   craft_index: "Índice de Craft",
+  craft_extras: "Eventos y seguimiento de Craft",
   web_fetch: "Fuentes web",
   watchdog: "Vigilancia de tareas",
   cleanup: "Limpieza",
@@ -36,11 +45,17 @@ const JOB_LABEL: Record<string, string> = {
 
 async function Content() {
   const { supabase } = await getSession();
-  const [tasksRes, projectsRes, jobsRes, linksRes] = await Promise.all([
+  const today_ = todayISO();
+  const [tasksRes, projectsRes, jobsRes, linksRes, eventsRes, trackingRes, changesRes] = await Promise.all([
     supabase.from("tasks").select("id,title,status,priority,due_date,completed_at,project_id,is_demo").neq("status", "cancelled").order("due_date", { ascending: true, nullsFirst: false }).order("priority").order("position"),
     supabase.from("projects").select("id,name,status,color,is_demo").eq("status", "active").order("created_at"),
     supabase.from("job_runs").select("id,job_name,status,started_at,items,error,details").gte("started_at", isoDaysAgo(7)).order("started_at", { ascending: false }).limit(1000),
     supabase.from("kb_links").select("id,entity_type,entity_id,kb_documents(title,source_url,external_id,deleted_at)").limit(1000),
+    // Leídos de Craft por el worker: próximos eventos del Informe Diario y tabla de Seguimiento
+    supabase.from("craft_events").select("id,event_date,end_date,label,items,report_date").or(`event_date.gte.${today_},end_date.gte.${today_},event_date.is.null`).order("position"),
+    supabase.from("craft_tracking").select("external_id,title,category,status,status_key,due_date,period,notes,source_url,updated_at").order("due_date", { ascending: true, nullsFirst: false }).order("title"),
+    // Cambios pedidos desde la app: pendientes y problemas de los últimos 3 días
+    supabase.from("craft_tracking_changes").select("external_id,changes,state,created_at").gte("created_at", isoDaysAgo(3)).order("created_at", { ascending: false }),
   ]);
 
   const tasks = tasksRes.data ?? [];
@@ -54,7 +69,21 @@ async function Content() {
   for (const r of runs) if (r.status === "error") errors7d.set(r.job_name, (errors7d.get(r.job_name) ?? 0) + 1);
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
   const projectOptions = projects.map((p) => ({ id: p.id, name: p.name }));
-  const today = todayISO();
+  const today = today_;
+  const events = eventsRes.data ?? [];
+  // Seguimiento de Craft con los cambios aún no guardados superpuestos
+  const lastChange = new Map<string, { changes: Record<string, string | null>; state: string }>();
+  for (const c of changesRes.data ?? []) if (!lastChange.has(c.external_id)) lastChange.set(c.external_id, { changes: c.changes as Record<string, string | null>, state: c.state });
+  const allTracking = trackingRes.data ?? [];
+  const categories = [...new Set(allTracking.map((t) => t.category).filter((c): c is string => !!c))].sort((a, b) => a.localeCompare(b, "es"));
+  const tracking = allTracking
+    .map((t) => {
+      const ch = lastChange.get(t.external_id);
+      const pending = ch?.state === "pending";
+      const merged = pending ? { ...t, ...ch.changes } : t;
+      return { ...merged, title: String(merged.title ?? t.title), pending, problem: ch && PROBLEM[ch.state] ? PROBLEM[ch.state] : null };
+    })
+    .filter((t) => ACTIVE_TRACKING.includes(t.status_key ?? "") || t.pending || t.problem);
 
   // Documentos de Craft vinculados, por tarea o proyecto
   const docsFor = new Map<string, DocLink[]>();
@@ -138,6 +167,16 @@ async function Content() {
           ))
         )}
 
+        {tracking.length > 0 ? (
+          <div className="mt-6 border-t border-line pt-4">
+            <p className="mb-1 text-[13px] font-semibold text-ink-2">
+              En seguimiento (Craft) <span className="tnum font-normal text-ink-3">{tracking.length}</span>
+            </p>
+            <p className="mb-1 text-[12px] text-ink-3">De la tabla «Seguimiento activo». Toca uno para ver su seguimiento; el lápiz lo edita y la marca lo da por hecho. Los cambios se guardan en Craft.</p>
+            <TrackingList items={tracking} today={today} categories={categories} />
+          </div>
+        ) : null}
+
         {done.length > 0 ? (
           <div className="mt-6 border-t border-line pt-4">
             <p className="mb-1 text-[13px] font-semibold text-ink-2">Completadas recientemente</p>
@@ -151,6 +190,18 @@ async function Content() {
       </Card>
 
       <div className="flex flex-col gap-4 lg:col-span-2">
+        <Card>
+          <CardTitle>Próximos eventos</CardTitle>
+          {events.length === 0 ? (
+            <Empty title="Sin eventos" hint="Se leen cada hora del último Informe Diario de Craft." />
+          ) : (
+            <>
+              <EventList events={events} today={today} showMonth />
+              <p className="mt-2 text-[12px] text-ink-3">Del Informe Diario del {dayShort(events[0].report_date)} · 30 días vista.</p>
+            </>
+          )}
+        </Card>
+
         <Card>
           <CardTitle>Proyectos</CardTitle>
           {projects.length === 0 ? (

@@ -26,7 +26,7 @@ Fase 1 cerrada el 16-11-2026. Fase 2 cerrada el 17-11-2026 (`apps/web`): despleg
 - Idioma: interfaz, documentación y mensajes de commit en español; identificadores de código en inglés.
 - Coste cero: no contratar servicios, no crear cuentas ni activar planes de pago sin autorización expresa.
 - Sin cambios destructivos (borrar tablas, columnas o datos reales) sin copia previa y autorización.
-- Craft es de solo lectura. No escribir, mover ni borrar nada en Craft sin autorización expresa.
+- Craft es de solo lectura. No escribir, mover ni borrar nada en Craft sin autorización expresa. Única excepción (autorizada el 21-11-2026): el worker puede cambiar título, estado, fecha y notas de los elementos de la tabla «Seguimiento» del documento «🗂️ Seguimiento activo», solo a petición del usuario desde la app y con su propia conexión de escritura (`CRAFT_WRITE_API_URL`/`CRAFT_WRITE_API_KEY`). Nada más en Craft.
 - La IA es opcional: toda estadística se calcula con SQL o código. Nada debe romperse con `AI_PROVIDER=none`.
 - Secretos solo en `.env` (ignorado por Git) o en el Llavero. Nunca en variables `NEXT_PUBLIC_*`, en el repositorio ni en el chat.
 - Todas las tablas de `public` llevan `user_id` y RLS. Los secretos de terceros van en el esquema `private`.

@@ -13,7 +13,9 @@
     "backup": "node --env-file=.env src/backup.ts",
     "craft:index": "node --env-file=.env src/craft/index.ts",
     "cleanup": "node --env-file=.env src/cleanup.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "craft:extras": "node --env-file=.env src/craft/extras.ts",
+    "podcast": "node --env-file=.env src/podcast.ts"
   },
   "engines": {
     "node": ">=24"
