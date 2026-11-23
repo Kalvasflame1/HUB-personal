@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, ChevronRight, FileText, Globe, LogOut } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, Globe, LogOut, Watch } from "lucide-react";
 import { PageHeader } from "@/components/ui";
 import { signOut } from "@/app/actions";
 
@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/web", label: "Información web", icon: Globe },
   { href: "/informes", label: "Informes", icon: FileText },
   { href: "/conocimiento", label: "Conocimiento", icon: BookOpen },
+  { href: "/mas/widget", label: "Widget y Apple Watch", icon: Watch },
 ];
 
 export default function MasPage() {

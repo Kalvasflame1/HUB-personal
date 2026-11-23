@@ -185,6 +185,15 @@ Antes de nada: **verificar en el centro de ayuda de Anthropic cómo se factura h
 6. 🤖 Prueba con las seis preguntas de ejemplo del briefing y medición del consumo: hecha el 21-11-2026 (resultado en ROADMAP, Fase 5).
 7. Para apagar la IA: `AI_PROVIDER=none` y reiniciar el worker. Las preguntas a Claude se cierran con un aviso; las preguntas rápidas siguen funcionando.
 
+## 9 bis. Widget del iPhone y Apple Watch (Fase 6)
+
+Todo se explica también en la app: **Más → Widget y Apple Watch**.
+
+1. 👤 En esa pantalla, «Crear la clave» y copiarla (solo se ve una vez; al crear otra, la anterior deja de valer).
+2. 👤 iPhone: instalar **Scriptable** (gratis), pegar el script de la pantalla («Copiar el script»), ejecutarlo una vez para guardar la clave en el Llavero y añadir el widget de Scriptable (inicio: pequeño o mediano; bloqueo: rectangular, circular o en línea).
+3. 👤 Apple Watch y Siri: atajo «Hub» con *Obtener contenido de URL* → `POST {SUPABASE_URL}/rest/v1/rpc/widget_text`, cabeceras `apikey` (clave publicable) y `Accept: text/plain`, cuerpo JSON `{"token": "<clave>"}`; después *Mostrar resultado* o *Leer texto*, y activar «Mostrar en Apple Watch».
+4. Si se pierde el iPhone: «Revocar la clave» en la misma pantalla.
+
 ## 10. Copias de seguridad y restauración
 
 Tarea `backup` del worker (`apps/worker/src/backup.ts`), cada noche a las 03:30:

@@ -433,7 +433,23 @@ isOneToOne: false
                 }
           }
           Functions: {
-            [_ in never]: never
+            "create_widget_token":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"revoke_widget_tokens":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"widget_summary":
+{ Args: { "token": string }; Returns: Json
+                           },
+"widget_text":
+{ Args: { "token": string }; Returns: unknown
+                           },
+"widget_token_status":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"last_used_at": string
+            }[]
+                           }
           }
           Enums: {
             [_ in never]: never
