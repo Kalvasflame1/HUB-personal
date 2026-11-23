@@ -13,7 +13,8 @@ export const metadata: Metadata = { title: "Widget y Apple Watch" };
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://hub-personal-tau.vercel.app";
+// El widget abre siempre la app publicada (en local NEXT_PUBLIC_APP_URL apunta a localhost).
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") ? process.env.NEXT_PUBLIC_APP_URL : "https://hub-personal-tau.vercel.app";
 
 const STEP = "flex gap-3 text-[15px] leading-relaxed";
 const NUM = "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[13px] font-semibold text-accent";

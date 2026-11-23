@@ -52,32 +52,87 @@ async function load(token) {
 
 const km = (n) => String(n).replace(/\\.0$/, "").replace(".", ",");
 const pace = (s) => s ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") + " /km" : "";
+const CARD = Color.dynamic(new Color("#f0f0f2"), new Color("#1c1c20"));
+const TRACK = Color.dynamic(new Color("#e4e4e7"), new Color("#2c2c31"));
+const GOOD = Color.dynamic(new Color("#1f8a4c"), new Color("#34c36b"));
+const WARN = Color.dynamic(new Color("#b45309"), new Color("#f0a23b"));
+const BAD = Color.dynamic(new Color("#c62828"), new Color("#ff6b61"));
+const readyColor = (p) => p >= 60 ? GOOD : p >= 35 ? WARN : BAD;
+function freshness(tsb) {
+  if (tsb > 15) return "Muy descansado";
+  if (tsb > 5) return "Fresco";
+  if (tsb >= -10) return "Equilibrado";
+  if (tsb >= -30) return "Cargado";
+  return "Sobrecarga";
+}
+const DAYS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+function shortDate(iso) {
+  const d = new Date(iso + "T12:00:00");
+  return DAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()];
+}
 
 function text(stack, value, size, color = INK, weight = "regular") {
-  const t = stack.addText(value);
-  t.font = weight === "bold" ? Font.boldSystemFont(size) : weight === "semibold" ? Font.semiboldSystemFont(size) : Font.systemFont(size);
+  const t = stack.addText(String(value));
+  t.font = weight === "bold" ? Font.boldRoundedSystemFont(size) : weight === "semibold" ? Font.semiboldSystemFont(size) : Font.systemFont(size);
   t.textColor = color;
   t.lineLimit = 1;
-  t.minimumScaleFactor = 0.7;
+  t.minimumScaleFactor = 0.6;
   return t;
+}
+
+/** Barra de preparación hecha con dos pilas (respeta modo claro y oscuro). */
+function bar(parent, width, pct, height = 8) {
+  const track = parent.addStack();
+  track.size = new Size(width, height);
+  track.backgroundColor = TRACK;
+  track.cornerRadius = height / 2;
+  const fill = track.addStack();
+  fill.size = new Size(Math.max(height, Math.round(width * pct / 100)), height);
+  fill.backgroundColor = readyColor(pct);
+  fill.cornerRadius = height / 2;
+  track.addSpacer();
+}
+
+function card(parent, w, h, label, value, sub, valueColor = INK) {
+  const c = parent.addStack();
+  c.layoutVertically();
+  c.size = new Size(w, h);
+  c.backgroundColor = CARD;
+  c.cornerRadius = 14;
+  c.setPadding(9, 11, 9, 11);
+  text(c, label.toUpperCase(), 10, INK2, "semibold");
+  c.addSpacer(3);
+  text(c, value, 21, valueColor, "bold");
+  if (sub) { c.addSpacer(1); text(c, sub, 11, INK2); }
+  c.addSpacer();
+  return c;
+}
+
+function header(w, d, size) {
+  const head = w.addStack(); head.centerAlignContent();
+  text(head, "Personal Hub", size, ACCENT, "bold");
+  head.addSpacer();
+  text(head, shortDate(d.date), size - 4, INK2, "semibold");
 }
 
 function build(res) {
   const w = new ListWidget();
   w.url = APP_URL;
   w.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000);
-  const family = config.widgetFamily || "medium";
+  const family = config.widgetFamily || "large";
   const lock = family.startsWith("accessory");
-  if (!lock) { w.backgroundColor = BG; w.setPadding(14, 14, 14, 14); }
+  if (!lock) { w.backgroundColor = BG; w.setPadding(16, 16, 16, 16); }
 
   if (res.error) {
-    text(w, lock ? "Hub" : "Personal Hub", 13, ACCENT, "semibold");
-    const e = text(w, res.error, 12, INK2);
+    text(w, lock ? "Hub" : "Personal Hub", 16, ACCENT, "bold");
+    const e = text(w, res.error, 13, INK2);
     e.lineLimit = 3;
     return w;
   }
-  const d = res.data, r = d.running, t = d.tasks;
+  const d = res.data, r = d.running, t = d.tasks, tr = d.tracking;
   const today = (d.events[0] && d.events[0].date === d.date) ? d.events[0].items : [];
+  const podcast = d.podcast && d.podcast.today;
 
   if (family === "accessoryCircular") {
     w.addAccessoryWidgetBackground = true;
@@ -92,44 +147,89 @@ function build(res) {
   }
   if (family === "accessoryRectangular") {
     text(w, "Preparación " + r.readiness + "% · " + km(r.week_km) + " km", 13, Color.white(), "semibold");
-    text(w, t.pending + " tareas · " + d.tracking.due_soon + " en 7 días", 12, Color.white());
+    text(w, t.pending + " tareas · " + tr.due_soon + " en 7 días", 12, Color.white());
     if (today.length) text(w, today.join(", "), 12, Color.white());
     return w;
   }
 
-  // Pantalla de inicio
-  const head = w.addStack(); head.centerAlignContent();
-  text(head, "Personal Hub", 12, ACCENT, "semibold");
-  head.addSpacer();
-  if (res.stale) text(head, "sin red", 10, INK2);
-  w.addSpacer(6);
+  // Ancho útil aproximado del widget según la pantalla (inicio).
+  const sw = Device.screenSize().width;
+  const full = Math.round(sw * 0.85) - 32;
+  const small = Math.round(sw * 0.4) - 32;
 
-  const row = w.addStack();
-  const left = row.addStack(); left.layoutVertically();
-  text(left, r.readiness + "%", 30, INK, "bold");
-  text(left, "preparación", 11, INK2);
-  w.addSpacer(4);
   if (family === "small") {
-    w.addSpacer(2);
-    text(w, km(r.week_km) + " km esta semana", 12, INK, "semibold");
-    text(w, t.pending + " tareas · " + d.tracking.due_soon + " seguimiento", 12, INK2);
-    if (d.podcast && d.podcast.today) text(w, "Podcast de hoy listo", 12, ACCENT);
+    text(w, "Personal Hub", 14, ACCENT, "bold");
+    w.addSpacer(6);
+    text(w, r.readiness + "%", 34, INK, "bold");
+    text(w, "preparación · " + freshness(r.tsb).toLowerCase(), 11, INK2);
+    w.addSpacer(6);
+    bar(w, small, r.readiness);
+    w.addSpacer();
+    text(w, km(r.week_km) + " km esta semana", 13, INK, "semibold");
+    text(w, t.pending + " tareas · " + tr.due_soon + " seguimiento", 12, INK2);
     return w;
   }
 
-  row.addSpacer(16);
-  const right = row.addStack(); right.layoutVertically();
-  text(right, km(r.week_km) + " km esta semana · " + km(r.month_km) + " este mes", 12, INK, "semibold");
-  if (r.last) text(right, "Último: " + km(r.last.km) + " km · " + pace(r.last.pace_s_km), 12, INK2);
-  text(right, t.pending + " tareas" + (t.overdue ? " (" + t.overdue + " atrasadas)" : "") + " · " + d.tracking.due_soon + " seguimiento en 7 días", 12, INK2);
-  if (d.podcast && d.podcast.today) text(right, "Podcast de hoy listo", 12, ACCENT);
-  w.addSpacer();
-  if (today.length) {
-    const ev = text(w, "Hoy: " + today.join(", "), 12, INK);
-    ev.lineLimit = 2;
-  } else if (d.tracking.next) {
-    text(w, "Próximo: " + d.tracking.next.title, 12, INK);
+  if (family === "medium") {
+    header(w, d, 17);
+    w.addSpacer(8);
+    const row = w.addStack(); row.centerAlignContent();
+    text(row, r.readiness + "%", 24, INK, "bold");
+    row.addSpacer(8);
+    const col = row.addStack(); col.layoutVertically();
+    text(col, "Preparación · " + freshness(r.tsb) + (podcast ? " · podcast listo" : ""), 11, INK2, "semibold");
+    col.addSpacer(4);
+    bar(col, full - 80, r.readiness, 7);
+    w.addSpacer(10);
+    const cards = w.addStack();
+    const cw = Math.floor((full - 16) / 3);
+    card(cards, cw, 62, "Semana", km(r.week_km) + " km", km(r.month_km) + " este mes");
+    cards.addSpacer(8);
+    card(cards, cw, 62, "Tareas", t.pending, t.overdue ? t.overdue + " atrasadas" : "pendientes", t.overdue ? BAD : INK);
+    cards.addSpacer(8);
+    card(cards, cw, 62, "Seguimiento", tr.due_soon, "en 7 días", tr.due_soon ? WARN : INK);
+    return w;
   }
+
+  // Grande
+  header(w, d, 20);
+  w.addSpacer(12);
+  const ready = w.addStack(); ready.centerAlignContent();
+  text(ready, r.readiness + "%", 38, INK, "bold");
+  ready.addSpacer(10);
+  const info = ready.addStack(); info.layoutVertically();
+  text(info, "Preparación de hoy", 14, INK, "semibold");
+  text(info, freshness(r.tsb) + " · frescura " + String(r.tsb).replace(".", ","), 12, INK2);
+  w.addSpacer(8);
+  bar(w, full, r.readiness, 10);
+  w.addSpacer(12);
+
+  const cw = Math.floor((full - 10) / 2);
+  const g1 = w.addStack();
+  card(g1, cw, 72, "Esta semana", km(r.week_km) + " km", km(r.month_km) + " km este mes");
+  g1.addSpacer(10);
+  card(g1, cw, 72, "Último rodaje", r.last ? km(r.last.km) + " km" : "—", r.last ? pace(r.last.pace_s_km) + " · " + shortDate(r.last.date) : "");
+  w.addSpacer(10);
+  const g2 = w.addStack();
+  card(g2, cw, 72, "Tareas", t.pending, t.overdue ? t.overdue + " atrasadas" : t.today ? t.today + " para hoy" : "pendientes", t.overdue ? BAD : INK);
+  g2.addSpacer(10);
+  card(g2, cw, 72, "Seguimiento", tr.due_soon + " en 7 días", tr.next ? tr.next.title : tr.active + " activos", tr.due_soon ? WARN : INK);
+  w.addSpacer(10);
+
+  const hoy = w.addStack();
+  hoy.layoutVertically();
+  hoy.size = new Size(full, 0);
+  hoy.backgroundColor = CARD;
+  hoy.cornerRadius = 14;
+  hoy.setPadding(9, 11, 9, 11);
+  const hh = hoy.addStack(); hh.centerAlignContent();
+  text(hh, "HOY", 10, INK2, "semibold");
+  hh.addSpacer();
+  if (podcast) text(hh, "Podcast listo", 11, ACCENT, "semibold");
+  hoy.addSpacer(3);
+  const ev = text(hoy, today.length ? today.join(" · ") : "Sin eventos en el informe de hoy", 14, INK);
+  ev.lineLimit = 2;
+  w.addSpacer();
   return w;
 }
 
@@ -139,7 +239,7 @@ const res = token ? await load(token) : { error: "Abre el script en Scriptable y
 if (res.error === "Clave no válida" && config.runsInApp) { Keychain.remove(KEY_NAME); }
 const widget = build(res);
 if (config.runsInWidget) Script.setWidget(widget);
-else await widget.presentMedium();
+else await widget.presentLarge();
 Script.complete();
 `;
 }
