@@ -164,7 +164,7 @@ Sin orden fijado; cada una se planifica aparte.
 - **Widgets del iPhone y Apple Watch** (23-11-2026, sin coste: Scriptable y Atajos; una app nativa con WidgetKit/watchOS exigiría Xcode y renovar la firma cada 7 días sin cuenta de pago)
   - [x] Clave de solo lectura (`private.widget_tokens`, solo huella SHA-256) y funciones `widget_summary` (JSON) y `widget_text` (texto plano) para `anon` con clave válida. Probado por la API REST con una clave temporal (borrada): 200 con clave, 403 con clave falsa, 401 al intentar crear claves sin sesión; 0,1–0,5 s.
   - [x] Pantalla Más → Widget y Apple Watch: crear, ver estado y revocar la clave; script de Scriptable para copiar (pequeño, mediano y los tres tamaños de la pantalla de bloqueo, con caché sin red) e instrucciones del atajo «Hub» para el reloj y Siri.
-  - [ ] Instalación en el iPhone y el reloj por el usuario, y ajustes de diseño tras verlo en el dispositivo.
+  - [x] Instalado el 23-11-2026: widget grande en el iPhone, rediseñado tras verlo en el dispositivo (título más grande, barra de preparación con la escala de la app y tarjetas de semana, último rodaje, tareas, seguimiento y hoy), y atajo «Hub» con «Leer texto», comprobado por el usuario.
 
 - Apple Health (no tiene API web: exige una app nativa mínima o un Atajo que exporte datos)
 - Finanzas personales
