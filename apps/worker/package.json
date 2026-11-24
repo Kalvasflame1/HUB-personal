@@ -15,6 +15,7 @@
     "cleanup": "node --env-file=.env src/cleanup.ts",
     "typecheck": "tsc --noEmit",
     "craft:extras": "node --env-file=.env src/craft/extras.ts",
+    "craft:tasks": "node --env-file=.env src/craft/next-tasks.ts",
     "podcast": "node --env-file=.env src/podcast.ts",
     "ai:ask": "node --env-file=.env src/ai/queue.ts",
     "web:digest": "node --env-file=.env src/ai/web-digest.ts"

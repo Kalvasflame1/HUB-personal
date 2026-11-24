@@ -36,6 +36,7 @@ const JOB_LABEL: Record<string, string> = {
   craft_extras: "Eventos y seguimiento de Craft",
   web_digest: "Resumen de fuentes web",
   craft_changes: "Cambios del seguimiento en Craft",
+  craft_next_tasks: "Tareas para mañana desde Craft",
   podcast: "Podcast diario",
   web_fetch: "Fuentes web",
   watchdog: "Vigilancia de tareas",

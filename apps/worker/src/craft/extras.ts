@@ -34,7 +34,7 @@ const STATUS_KEYS: [RegExp, string][] = [
 
 // ---------- API (misma cadencia que el índice: menos de una petición cada 0,7 s) ----------
 let lastCall = 0;
-async function craft(path: string, params: Record<string, string> = {}, accept = "application/json", write?: { method: string; body: unknown }) {
+export async function craft(path: string, params: Record<string, string> = {}, accept = "application/json", write?: { method: string; body: unknown }) {
   // Las escrituras van por su propia conexión (CRAFT_WRITE_*); las lecturas, por la de solo lectura
   const base = write ? env("CRAFT_WRITE_API_URL") : env("CRAFT_API_URL");
   const key = write ? env("CRAFT_WRITE_API_KEY") : env("CRAFT_API_KEY");

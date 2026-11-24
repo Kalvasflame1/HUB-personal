@@ -25,6 +25,7 @@ const LABEL: Record<string, string> = {
   cleanup: "Limpieza",
   craft_extras: "Eventos y seguimiento de Craft",
   craft_changes: "Cambios del seguimiento en Craft",
+  craft_next_tasks: "Tareas para mañana desde Craft",
   podcast: "Podcast diario",
   web_digest: "Resumen de fuentes web",
 };
