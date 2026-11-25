@@ -18,7 +18,7 @@
 import { createHash } from "node:crypto";
 import type pg from "pg";
 import { env, USER_ID } from "../db.ts";
-import { runJob, type JobResult } from "../jobs.ts";
+import { runJob, TransientError, type JobResult } from "../jobs.ts";
 
 const EXCLUDED_FOLDERS = new Set(["27b63c0d-3e81-0751-6198-cfdffba2c22c" /* How to use Craft */, "4020129E-6128-42AB-8F1F-4462D8010D71" /* NOTION */]);
 const EXCLUDED_DOCS = new Set([
@@ -48,6 +48,9 @@ type Entry = Doc & { path: string; folderId: string };
 
 // ---------- API ----------
 let lastCall = 0;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Esperas antes de cada reintento cuando Craft falla con 5xx o no responde (3 reintentos, ~2,5 min). */
+const RETRY_WAITS = [15_000, 45_000, 90_000];
 export async function craft(path: string, params: Record<string, string> = {}, accept = "application/json"): Promise<Response> {
   const url = new URL(env("CRAFT_API_URL").replace(/\/$/, "") + path);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
@@ -56,10 +59,23 @@ export async function craft(path: string, params: Record<string, string> = {}, a
     const wait = lastCall + 700 - Date.now();
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
     lastCall = Date.now();
-    const res = await fetch(url, { headers: { authorization: `Bearer ${env("CRAFT_API_KEY")}`, accept }, signal: AbortSignal.timeout(30_000) });
+    let res: Response;
+    try {
+      res = await fetch(url, { headers: { authorization: `Bearer ${env("CRAFT_API_KEY")}`, accept }, signal: AbortSignal.timeout(30_000) });
+    } catch (e) {
+      // Sin respuesta (tiempo agotado o red): se trata como un 5xx
+      if (attempt < RETRY_WAITS.length) { await sleep(RETRY_WAITS[attempt]); continue; }
+      throw new TransientError(`Craft no responde en ${path} tras ${attempt + 1} intentos (${(e as Error).name === "TimeoutError" ? "tiempo agotado" : (e as Error).message}); suele ser un fallo temporal de Craft.`);
+    }
     if (res.status === 429 && attempt < 3) {
-      await new Promise((r) => setTimeout(r, (Number(res.headers.get("x-ratelimit-reset")) || 60) * 1000));
+      await sleep((Number(res.headers.get("x-ratelimit-reset")) || 60) * 1000);
       continue;
+    }
+    // 500, 502, 503 y 504: fallos de los servidores de Craft (Cloudflare). Se reintenta con espera.
+    if (res.status >= 500) {
+      await res.body?.cancel().catch(() => {});
+      if (attempt < RETRY_WAITS.length) { await sleep(RETRY_WAITS[attempt]); continue; }
+      throw new TransientError(`Craft no responde (${res.status}) en ${path} tras ${attempt + 1} intentos; suele ser un fallo temporal de Craft.`);
     }
     if (!res.ok) throw new Error(`Craft ${path} → ${res.status}: ${(await res.text()).slice(0, 200)}`);
     return res;

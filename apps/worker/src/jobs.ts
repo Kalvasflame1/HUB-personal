@@ -13,6 +13,13 @@ export type JobFn = (db: pg.Client) => Promise<JobResult>;
 /** Error que no es un fallo (p. ej. límite de Strava): la ejecución queda como «skipped». */
 export class SkipError extends Error {}
 
+/**
+ * Fallo temporal de un servicio externo (p. ej. Craft devuelve 502/504 desde Cloudflare).
+ * Cuenta como error, pero solo genera aviso si se repite en dos ejecuciones seguidas.
+ */
+export class TransientError extends Error {}
+const isTransient = (e: unknown) => e instanceof TransientError || /Craft no responde/.test((e as Error).message);
+
 const LABEL: Record<string, string> = {
   strava_sync: "Sincronización de Strava",
   web_fetch: "Recogida de fuentes web",
@@ -34,7 +41,8 @@ export const jobLabel = (name: string) => LABEL[name] ?? name;
 /**
  * Ejecuta una tarea con su propia conexión y la registra en job_runs.
  * Si falla, crea un aviso, pero solo cuando la ejecución anterior no había fallado ya
- * (así un fallo persistente no genera un aviso cada 30 minutos).
+ * (así un fallo persistente no genera un aviso cada 30 minutos). Los fallos temporales
+ * (TransientError) solo avisan a partir del segundo seguido.
  */
 export async function runJob(name: string, fn: JobFn): Promise<JobResult & { ok: boolean }> {
   const started = Date.now();
@@ -51,7 +59,7 @@ export async function runJob(name: string, fn: JobFn): Promise<JobResult & { ok:
       const message = (e as Error).message;
       const skipped = e instanceof SkipError || (e as Error).name === "RateLimitError";
       await finish(skipped ? "skipped" : "error", null, { ms: Date.now() - started }, message);
-      if (!skipped) await notifyFailure(db, name, message);
+      if (!skipped) await notifyFailure(db, name, message, isTransient(e));
       log(`${name}: ${skipped ? "skipped" : "ERROR"} · ${message}`);
       return { ok: skipped, message };
     }
@@ -64,14 +72,19 @@ export async function runJob(name: string, fn: JobFn): Promise<JobResult & { ok:
   }
 }
 
-async function notifyFailure(db: pg.Client, name: string, message: string) {
+async function notifyFailure(db: pg.Client, name: string, message: string, transient = false) {
+  // Las dos ejecuciones anteriores a esta (la actual ya está registrada como error)
   const prev = await db.query<{ status: string }>(
     `select status from public.job_runs
       where user_id = $1 and job_name = $2 and finished_at is not null
-      order by started_at desc offset 1 limit 1`,
+      order by started_at desc offset 1 limit 2`,
     [USER_ID(), name],
   );
-  if (prev.rows[0]?.status === "error") return;
+  const [p1, p2] = prev.rows.map((r) => r.status);
+  if (transient) {
+    // Primer fallo temporal: sin aviso. Segundo seguido: aviso. Tercero y siguientes: ya avisado.
+    if (p1 !== "error" || p2 === "error") return;
+  } else if (p1 === "error") return;
   await db.query(
     "insert into public.notifications (user_id, level, title, body, link) values ($1, 'error', $2, $3, '/productividad')",
     [USER_ID(), `Ha fallado: ${jobLabel(name)}`, message.slice(0, 500)],

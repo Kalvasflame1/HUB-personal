@@ -244,6 +244,6 @@ El código está en Git y los secretos en tu gestor de contraseñas; con eso y l
 |---|---|
 | La PWA no carga datos | Sesión caducada; estado del proyecto en Supabase (¿pausado?) |
 | No entran entrenamientos | Última fila de `job_runs` para `strava_sync`; caducidad del token; límite diario |
-| El índice de Craft no se actualiza | `job_runs` para `craft_index`; respuesta 429 (límite de peticiones) |
+| El índice de Craft no se actualiza | `job_runs` para `craft_index`; respuesta 429 (límite de peticiones). Los 500–504 son fallos de los servidores de Craft (Cloudflare): desde el 25-11-2026 el worker reintenta 3 veces (15 s, 45 s y 90 s) y solo avisa si falla dos ejecuciones seguidas («Craft no responde…») |
 | El worker no corre | `launchctl list` y el log del servicio; ¿el Mac entró en reposo? |
 | El asistente no responde | `ai_jobs` en estado `queued`; tope diario alcanzado; sesión de la CLI |
