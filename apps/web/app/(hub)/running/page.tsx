@@ -1,20 +1,44 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ExternalLink, MessageCircle } from "lucide-react";
 import { getSession } from "@/lib/supabase/server";
 import { Card, CardTitle, DemoBadge, Empty, PageHeader, SkeletonGrid, Stat } from "@/components/ui";
 import { FitnessCharts, HeartRateChart, LoadChart, MonthlyKmChart, PaceChart, WeeklyKmChart, type MonthPoint, type WeekPoint } from "@/components/charts";
 import { freshnessText } from "@/lib/fitness";
 import { loadFitness } from "@/lib/fitness-data";
 import { ReadinessBar } from "@/components/readiness";
+import { ARTIFACTS } from "@/lib/knowledge";
 import { capitalize, dateShort, dayShort, duration, km, monthName, monthStartISO, num, pace, relative, todayISO, weekStartISO } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Running" };
 
+const COACH = ARTIFACTS.find((a) => a.title === "Coach Personal");
+const COACH_CHAT = ARTIFACTS.find((a) => a.title === "Coach Chat");
+
+/** Accesos al panel del coach de running de Cowork (artefactos de Claude, se abren fuera del Hub). */
+function CoachLinks() {
+  if (!COACH) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <a href={COACH.href} target="_blank" rel="noopener noreferrer" className="press inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[15px] font-semibold text-white">
+        Panel del coach <ExternalLink size={16} aria-hidden />
+      </a>
+      {COACH_CHAT ? (
+        <a href={COACH_CHAT.href} target="_blank" rel="noopener noreferrer" className="press inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] font-medium text-accent">
+          <MessageCircle size={16} aria-hidden /> Chat
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
 export default function RunningPage() {
   return (
     <>
-      <PageHeader title="Running" subtitle="Volumen, ritmo, carga y marcas." />
+      <PageHeader title="Running" subtitle="Volumen, ritmo, carga y marcas.">
+        <CoachLinks />
+      </PageHeader>
       <Suspense fallback={<SkeletonGrid blocks={5} />}>
         <Content />
       </Suspense>
