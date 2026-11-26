@@ -168,7 +168,7 @@ Sin orden fijado; cada una se planifica aparte.
 - **Proyectos con respaldo en Craft** (26-11-2026, escritura en Craft autorizada por el usuario ese día)
   - [x] Productividad → Proyectos: «Nuevo proyecto» (nombre y descripción), editar, pausar/reanudar, terminar y archivar. Los pausados se siguen viendo; terminados y archivados salen de la lista. Migración `20261126100000_projects_craft.sql` (columnas `craft_*` en `projects`).
   - [x] Worker `craft_projects` (cada 30 min y en el minuto siguiente si hay un proyecto sin carpeta): carpeta por proyecto dentro de «📁 PROYECTOS HUB», «📋 Ficha del proyecto» con descripción, estado y tareas (se reescribe solo si cambia), y enlace en la app de los demás documentos de la carpeta.
-  - [ ] Conexión de escritura `CRAFT_PROJECTS_API_*` creada por el usuario y prueba real de crear carpeta y ficha.
+  - [x] Conexión de escritura `CRAFT_PROJECTS_API_*` creada por el usuario el 26-11-2026 (de todo el espacio). Probado: carpeta «Personal Hub» y su ficha creadas; segunda pasada sin cambios. Worker reiniciado con `craft_projects`.
 
 - Apple Health (no tiene API web: exige una app nativa mínima o un Atajo que exporte datos)
 - Finanzas personales
