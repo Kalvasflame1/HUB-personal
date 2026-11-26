@@ -165,6 +165,10 @@ Sin orden fijado; cada una se planifica aparte.
   - [x] Clave de solo lectura (`private.widget_tokens`, solo huella SHA-256) y funciones `widget_summary` (JSON) y `widget_text` (texto plano) para `anon` con clave válida. Probado por la API REST con una clave temporal (borrada): 200 con clave, 403 con clave falsa, 401 al intentar crear claves sin sesión; 0,1–0,5 s.
   - [x] Pantalla Más → Widget y Apple Watch: crear, ver estado y revocar la clave; script de Scriptable para copiar (pequeño, mediano y los tres tamaños de la pantalla de bloqueo, con caché sin red) e instrucciones del atajo «Hub» para el reloj y Siri.
   - [x] Instalado el 23-11-2026: widget grande en el iPhone, rediseñado tras verlo en el dispositivo (título más grande, barra de preparación con la escala de la app y tarjetas de semana, último rodaje, tareas, seguimiento y hoy), y atajo «Hub» con «Leer texto», comprobado por el usuario.
+- **Proyectos con respaldo en Craft** (26-11-2026, escritura en Craft autorizada por el usuario ese día)
+  - [x] Productividad → Proyectos: «Nuevo proyecto» (nombre y descripción), editar, pausar/reanudar, terminar y archivar. Los pausados se siguen viendo; terminados y archivados salen de la lista. Migración `20261126100000_projects_craft.sql` (columnas `craft_*` en `projects`).
+  - [x] Worker `craft_projects` (cada 30 min y en el minuto siguiente si hay un proyecto sin carpeta): carpeta por proyecto dentro de «📁 PROYECTOS HUB», «📋 Ficha del proyecto» con descripción, estado y tareas (se reescribe solo si cambia), y enlace en la app de los demás documentos de la carpeta.
+  - [ ] Conexión de escritura `CRAFT_PROJECTS_API_*` creada por el usuario y prueba real de crear carpeta y ficha.
 
 - Apple Health (no tiene API web: exige una app nativa mínima o un Atajo que exporte datos)
 - Finanzas personales

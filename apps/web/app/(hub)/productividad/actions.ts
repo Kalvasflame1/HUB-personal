@@ -65,6 +65,40 @@ export async function updateTask(formData: FormData) {
   refresh();
 }
 
+// ---------- Proyectos ----------
+// La web solo crea y cambia el proyecto en la base de datos. La carpeta y la «Ficha del
+// proyecto» en Craft las crea y mantiene el worker (apps/worker/src/craft/projects.ts).
+
+const PROJECT_STATUSES = ["active", "paused", "done", "archived"] as const;
+
+export async function createProject(formData: FormData) {
+  const { supabase } = await getSession();
+  const name = String(formData.get("name") ?? "").trim().slice(0, 120);
+  if (!name) return;
+  const description = String(formData.get("description") ?? "").trim().slice(0, 2000);
+  await supabase.from("projects").insert({ name, description: description || null });
+  refresh();
+}
+
+export async function updateProject(formData: FormData) {
+  const { supabase } = await getSession();
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim().slice(0, 120);
+  if (!id || !name) return;
+  const description = String(formData.get("description") ?? "").trim().slice(0, 2000);
+  await supabase.from("projects").update({ name, description: description || null }).eq("id", id);
+  refresh();
+}
+
+export async function setProjectStatus(formData: FormData) {
+  const { supabase } = await getSession();
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (!id || !(PROJECT_STATUSES as readonly string[]).includes(status)) return;
+  await supabase.from("projects").update({ status }).eq("id", id);
+  refresh();
+}
+
 // ---------- Seguimiento de Craft ----------
 // La web no escribe en Craft: deja el cambio en una cola y el worker lo aplica (ver la migración
 // 20261121100000_craft_tracking_changes.sql). Solo título, categoría, estado, fecha y notas.

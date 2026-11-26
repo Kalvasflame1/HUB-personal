@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "craft:extras": "node --env-file=.env src/craft/extras.ts",
     "craft:tasks": "node --env-file=.env src/craft/next-tasks.ts",
+    "craft:projects": "node --env-file=.env src/craft/projects.ts",
     "podcast": "node --env-file=.env src/podcast.ts",
     "ai:ask": "node --env-file=.env src/ai/queue.ts",
     "web:digest": "node --env-file=.env src/ai/web-digest.ts"

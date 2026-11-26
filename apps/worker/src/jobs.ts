@@ -33,6 +33,7 @@ const LABEL: Record<string, string> = {
   craft_extras: "Eventos y seguimiento de Craft",
   craft_changes: "Cambios del seguimiento en Craft",
   craft_next_tasks: "Tareas para mañana desde Craft",
+  craft_projects: "Proyectos en Craft",
   podcast: "Podcast diario",
   web_digest: "Resumen de fuentes web",
 };

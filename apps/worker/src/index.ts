@@ -19,6 +19,7 @@ import { indexCraft } from "./craft/index.ts";
 import { cleanup } from "./cleanup.ts";
 import { applyTrackingChanges, pendingTrackingChanges, readCraftExtras } from "./craft/extras.ts";
 import { importNextTasks } from "./craft/next-tasks.ts";
+import { pendingProjects, syncProjects } from "./craft/projects.ts";
 import { podcast } from "./podcast.ts";
 import { drainAiQueue, listenAiJobs } from "./ai/queue.ts";
 import { webDigest } from "./ai/web-digest.ts";
@@ -48,6 +49,8 @@ const JOBS: Spec[] = [
   { name: "craft_extras", every: 60, fn: readCraftExtras, staleAfter: 6 * 60 },
   // Tareas para mañana del «Cierre del día» de Craft → tareas del Hub (con fecha del día siguiente)
   { name: "craft_next_tasks", at: "23:45", fn: (db) => importNextTasks(db), staleAfter: 26 * 60 },
+  // Proyectos: carpeta y «Ficha del proyecto» en Craft (los nuevos, además, en el minuto siguiente)
+  { name: "craft_projects", every: 30, fn: (db) => syncProjects(db), staleAfter: 6 * 60 },
   // Podcast: cada 10 min entre 05:00 y 13:00 (listo para el viaje de las 05:30) hasta que haya guion nuevo; luego se omite hasta mañana
   { name: "podcast", every: 10, window: ["05:00", "13:00"], fn: (db) => podcast(db), staleAfter: 26 * 60 },
   { name: "backup", at: "03:30", fn: backup, staleAfter: 3 * 24 * 60 },
@@ -159,6 +162,8 @@ async function tick() {
     const q = await connect();
     try {
       if (await pendingTrackingChanges(q)) await runJob("craft_changes", applyTrackingChanges);
+      // Proyecto recién creado en la app: su carpeta en Craft sin esperar a la media hora
+      if (await pendingProjects(q)) await runJob("craft_projects", (db) => syncProjects(db));
     } finally {
       await q.end();
     }

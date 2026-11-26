@@ -249,14 +249,14 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "color": string | null,"created_at": string,"description": string | null,"id": string,"is_demo": boolean,"name": string,"status": string,"updated_at": string,"user_id": string
+                    "color": string | null,"craft_doc_id": string | null,"craft_error": string | null,"craft_folder_id": string | null,"craft_sync_hash": string | null,"craft_synced_at": string | null,"created_at": string,"description": string | null,"id": string,"is_demo": boolean,"name": string,"status": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "color"?: string | null,"created_at"?: string,"description"?: string | null,"id"?: string,"is_demo"?: boolean,"name": string,"status"?: string,"updated_at"?: string,"user_id"?: string
+                    "color"?: string | null,"craft_doc_id"?: string | null,"craft_error"?: string | null,"craft_folder_id"?: string | null,"craft_sync_hash"?: string | null,"craft_synced_at"?: string | null,"created_at"?: string,"description"?: string | null,"id"?: string,"is_demo"?: boolean,"name": string,"status"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "color"?: string | null,"created_at"?: string,"description"?: string | null,"id"?: string,"is_demo"?: boolean,"name"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string
+                    "color"?: string | null,"craft_doc_id"?: string | null,"craft_error"?: string | null,"craft_folder_id"?: string | null,"craft_sync_hash"?: string | null,"craft_synced_at"?: string | null,"created_at"?: string,"description"?: string | null,"id"?: string,"is_demo"?: boolean,"name"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -439,7 +439,13 @@ isOneToOne: false
 "revoke_widget_tokens":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"widget_complete_task":
+{ Args: { "task_id": string,"token": string }; Returns: Json
+                           },
 "widget_summary":
+{ Args: { "token": string }; Returns: Json
+                           },
+"widget_tasks":
 { Args: { "token": string }; Returns: Json
                            },
 "widget_text":

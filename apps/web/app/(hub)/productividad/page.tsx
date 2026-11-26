@@ -12,7 +12,8 @@ const PROBLEM: Record<string, string> = {
 };
 import { addTask } from "./actions";
 import { craftUrl } from "@/lib/knowledge";
-import { DocLinks, TaskRow, type DocLink } from "./task-row";
+import { TaskRow, type DocLink } from "./task-row";
+import { ProjectList } from "./project-list";
 import { EventList } from "@/components/craft-events";
 import { TrackingList } from "@/components/craft-tracking";
 
@@ -37,6 +38,7 @@ const JOB_LABEL: Record<string, string> = {
   web_digest: "Resumen de fuentes web",
   craft_changes: "Cambios del seguimiento en Craft",
   craft_next_tasks: "Tareas para mañana desde Craft",
+  craft_projects: "Proyectos en Craft",
   podcast: "Podcast diario",
   web_fetch: "Fuentes web",
   watchdog: "Vigilancia de tareas",
@@ -52,7 +54,7 @@ async function Content() {
   const today_ = todayISO();
   const [tasksRes, projectsRes, jobsRes, linksRes, eventsRes, trackingRes, changesRes] = await Promise.all([
     supabase.from("tasks").select("id,title,status,priority,due_date,completed_at,project_id,is_demo").neq("status", "cancelled").order("due_date", { ascending: true, nullsFirst: false }).order("priority").order("position"),
-    supabase.from("projects").select("id,name,status,color,is_demo").eq("status", "active").order("created_at"),
+    supabase.from("projects").select("id,name,description,status,color,is_demo,craft_doc_id,craft_error").in("status", ["active", "paused"]).order("created_at"),
     supabase.from("job_runs").select("id,job_name,status,started_at,items,error,details").gte("started_at", isoDaysAgo(7)).order("started_at", { ascending: false }).limit(1000),
     supabase.from("kb_links").select("id,entity_type,entity_id,kb_documents(title,source_url,external_id,deleted_at)").limit(1000),
     // Leídos de Craft por el worker: próximos eventos del Informe Diario y tabla de Seguimiento
@@ -72,7 +74,10 @@ async function Content() {
   const errors7d = new Map<string, number>();
   for (const r of runs) if (r.status === "error") errors7d.set(r.job_name, (errors7d.get(r.job_name) ?? 0) + 1);
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
-  const projectOptions = projects.map((p) => ({ id: p.id, name: p.name }));
+  // Las tareas nuevas solo van a proyectos activos; al editar se ofrecen también los pausados
+  // para que una tarea de un proyecto pausado no pierda su proyecto al guardarla.
+  const activeProjects = projects.filter((p) => p.status === "active");
+  const projectOptions = projects.map((p) => ({ id: p.id, name: p.status === "paused" ? `${p.name} (pausado)` : p.name }));
   const today = today_;
   const events = eventsRes.data ?? [];
   // Seguimiento de Craft con los cambios aún no guardados superpuestos
@@ -127,7 +132,7 @@ async function Content() {
             <label htmlFor="project_id" className="text-[12px] font-medium text-ink-3">Proyecto</label>
             <select id="project_id" name="project_id" defaultValue="" className="h-11 rounded-xl border border-line bg-bg px-2 text-[15px] outline-none focus:border-accent">
               <option value="">Ninguno</option>
-              {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {activeProjects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-2">
@@ -208,29 +213,17 @@ async function Content() {
 
         <Card>
           <CardTitle>Proyectos</CardTitle>
-          {projects.length === 0 ? (
-            <Empty title="Sin proyectos" />
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {projects.map((p) => {
-                const mine = tasks.filter((t) => t.project_id === p.id);
-                const closed = mine.filter((t) => t.status === "done").length;
-                const pct = mine.length ? Math.round((closed / mine.length) * 100) : 0;
-                return (
-                  <li key={p.id}>
-                    <div className="flex items-baseline justify-between gap-2">
-                      <p className="truncate text-[15px] font-medium">{p.name}</p>
-                      <p className="tnum shrink-0 text-[12px] text-ink-3">{closed}/{mine.length}</p>
-                    </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" role="img" aria-label={`${pct}% completado`}>
-                      <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
-                    </div>
-                    <DocLinks docs={docsFor.get(`project:${p.id}`)} />
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <ProjectList
+            projects={projects.map((p) => {
+              const mine = tasks.filter((t) => t.project_id === p.id);
+              return {
+                id: p.id, name: p.name, description: p.description, status: p.status,
+                closed: mine.filter((t) => t.status === "done").length, total: mine.length,
+                craftHref: p.craft_doc_id ? craftUrl(p.craft_doc_id) : null, craftError: p.craft_error,
+                docs: docsFor.get(`project:${p.id}`),
+              };
+            })}
+          />
         </Card>
 
         <Card>
