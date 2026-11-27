@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, ListChecks, Activity, Globe, Sparkles, FileText, BookOpen, Ellipsis, type LucideIcon } from "lucide-react";
+import { LayoutGrid, ListChecks, Activity, Wallet, Globe, Sparkles, FileText, BookOpen, Ellipsis, type LucideIcon } from "lucide-react";
 
 type Item = { href: string; label: string; icon: LucideIcon };
 
@@ -10,6 +10,7 @@ const ITEMS: Item[] = [
   { href: "/", label: "Inicio", icon: LayoutGrid },
   { href: "/productividad", label: "Productividad", icon: ListChecks },
   { href: "/running", label: "Running", icon: Activity },
+  { href: "/finanzas", label: "Finanzas", icon: Wallet },
   { href: "/web", label: "Información web", icon: Globe },
   { href: "/asistente", label: "Asistente", icon: Sparkles },
   { href: "/informes", label: "Informes", icon: FileText },
@@ -20,11 +21,11 @@ const TABS: Item[] = [
   ITEMS[0],
   { ...ITEMS[1], label: "Tareas" },
   ITEMS[2],
-  ITEMS[4],
+  ITEMS[5],
   { href: "/mas", label: "Más", icon: Ellipsis },
 ];
 
-const MORE = ["/mas", "/web", "/informes", "/conocimiento"];
+const MORE = ["/mas", "/finanzas", "/web", "/informes", "/conocimiento"];
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);

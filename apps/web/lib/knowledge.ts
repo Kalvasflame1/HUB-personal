@@ -32,5 +32,6 @@ export const ARTIFACTS: KnowledgeLink[] = [
   { title: "Coach Personal", note: "Entrenador de running", href: "https://claude.ai/artifact/RjVPPMAPLkNDXuysQ5ecvm" },
   { title: "Coach Chat", note: "Conversación con el coach", href: "https://claude.ai/artifact/1rJzxcVATNSSc47VuYrYUJ" },
   { title: "Taller del Resumen Diario", note: "Mejoras pendientes del resumen", href: "https://claude.ai/artifact/QoYVxvqW41xnuVF3aTcn4P" },
+  { title: "Finanzas 2026 · Dashboard", note: "Finanzas", href: "https://claude.ai/artifact/TDf9GeDv7poGJ8Q3A1pSVQ" },
   { title: "Simulador de ahorro familiar", note: "Finanzas", href: "https://claude.ai/artifact/NFZWjFxk4Em1nDvWDuQ2ZD" },
 ];

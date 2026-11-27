@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, ChevronRight, FileText, Globe, LogOut, Watch } from "lucide-react";
+import { BookOpen, ChevronRight, FileText, Globe, LogOut, Wallet, Watch } from "lucide-react";
 import { PageHeader } from "@/components/ui";
 import { signOut } from "@/app/actions";
 
 export const metadata: Metadata = { title: "Más" };
 
 const LINKS = [
+  { href: "/finanzas", label: "Finanzas", icon: Wallet },
   { href: "/web", label: "Información web", icon: Globe },
   { href: "/informes", label: "Informes", icon: FileText },
   { href: "/conocimiento", label: "Conocimiento", icon: BookOpen },
