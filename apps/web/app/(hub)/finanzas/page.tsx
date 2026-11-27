@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChevronRight, LayoutDashboard, PiggyBank, type LucideIcon } from "lucide-react";
+import { ChevronRight, LayoutDashboard, PiggyBank, TrendingUp, type LucideIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui";
 import { ARTIFACTS } from "@/lib/knowledge";
 
@@ -7,11 +7,13 @@ export const metadata: Metadata = { title: "Finanzas" };
 
 const ICONS: Record<string, LucideIcon> = {
   "Finanzas 2026 · Dashboard": LayoutDashboard,
+  "Cartera 2026 · Dashboard": TrendingUp,
   "Simulador de ahorro familiar": PiggyBank,
 };
 
 const NOTES: Record<string, string> = {
-  "Finanzas 2026 · Dashboard": "Gastos, ingresos, presupuesto e inversión del año",
+  "Finanzas 2026 · Dashboard": "Gastos, ingresos, presupuesto y traspasos a la cartera",
+  "Cartera 2026 · Dashboard": "Evolución de la cartera, posiciones y resultado de las ventas",
   "Simulador de ahorro familiar": "Escenarios de ahorro",
 };
 
